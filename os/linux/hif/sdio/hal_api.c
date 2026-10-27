@@ -1349,12 +1349,15 @@ void halRxSDIOEnhanceReceiveRFBs(IN struct ADAPTER *prAdapter)
 			continue;
 
 		for (i = 0; i < u2RxPktNum; i++) {
-			if (rxNum == 0) {
-				/* HAL_READ_RX_LENGTH */
-				HAL_READ_RX_LENGTH(prAdapter, &u2RxLength, &u2Tmp);
-			} else if (rxNum == 1) {
-				/* HAL_READ_RX_LENGTH */
-				HAL_READ_RX_LENGTH(prAdapter, &u2Tmp, &u2RxLength);
+			u2RxLength = (rxNum == 0 ? prSDIOCtrl->rRxInfo.u.au2Rx0Len[i] :
+				prSDIOCtrl->rRxInfo.u.au2Rx1Len[i]);
+
+			if (!u2RxLength) {
+				if (rxNum == 0) {
+					HAL_READ_RX_LENGTH(prAdapter, &u2RxLength, &u2Tmp);
+				} else if (rxNum == 1) {
+					HAL_READ_RX_LENGTH(prAdapter, &u2Tmp, &u2RxLength);
+				}
 			}
 
 			if (!u2RxLength)
@@ -1568,9 +1571,6 @@ void halRxSDIOAggReceiveRFBs(IN struct ADAPTER *prAdapter)
 
 void halProcessRxInterrupt(IN struct ADAPTER *prAdapter)
 {
-	if (prAdapter->prGlueInfo->rHifInfo.fgSkipRx) {
-		return;
-	}
 
 #if CFG_SDIO_INTR_ENHANCE
 #if CFG_SDIO_RX_AGG
@@ -2213,7 +2213,6 @@ void halProcessAbnormalInterrupt(IN struct ADAPTER *prAdapter)
 
 	if (u4Data & (WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW)) {
 		printk_ratelimited(KERN_ERR "SDIO Rx underflow: WASR=0x%08X\n", u4Data);
-		prAdapter->prGlueInfo->rHifInfo.fgSkipRx = TRUE;
 	}
 
 	halDumpIntLog(prAdapter);

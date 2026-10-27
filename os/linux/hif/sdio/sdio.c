@@ -1333,19 +1333,8 @@ kalDevPortRead(IN struct GLUE_INFO *prGlueInfo,
 
 	sdio_claim_host(prSdioFunc);
 
-	/* Split buffer into multiple single block to workaround hifsys */
-	while (count >= prSdioFunc->cur_blksize) {
-		count -= prSdioFunc->cur_blksize;
-		bNum++;
-	}
-	if (count > 0 && bNum > 0)
-		bNum++;
-
-	if (bNum > 0) {
-		ret = sdio_readsb(prSdioFunc, pucDst, u2Port, prSdioFunc->cur_blksize * bNum);
-	} else {
-		ret = sdio_readsb(prSdioFunc, pucDst, u2Port, count);
-	}
+	/* Read exact packet size to avoid FIFO underflow */
+	ret = sdio_readsb(prSdioFunc, pucDst, u2Port, count);
 
 	sdio_release_host(prSdioFunc);
 #else
