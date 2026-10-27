@@ -232,12 +232,15 @@ void scnEventReturnChannel(IN struct ADAPTER *prAdapter,
 	rCmdScanCancel.ucSeqNum = ucScnSeqNum;
 	rCmdScanCancel.ucIsExtChannel = (uint8_t) FALSE;
 
+	/* Bypass CMD_ID_SCAN_CANCEL into firmware: MT7663 firmware asserts at wsys_i #565 if cancel is received while idle */
+#if 0
 	wlanSendSetQueryCmd(prAdapter,
 			    CMD_ID_SCAN_CANCEL,
 			    TRUE,
 			    FALSE, FALSE, NULL, NULL,
 			    sizeof(struct CMD_SCAN_CANCEL),
 			    (uint8_t *)&rCmdScanCancel, NULL, 0);
+#endif
 }				/* scnEventReturnChannel */
 
 void scanRemoveAllP2pBssDesc(IN struct ADAPTER *prAdapter)
