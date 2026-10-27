@@ -3940,7 +3940,6 @@ void nicRxProcessRFBs(IN struct ADAPTER *prAdapter)
 					nicRxCheckWakeupReason(prAdapter,
 							       prSwRfb);
 #endif
-				       prSwRfb->ucPacketType, prSwRfb->prRxStatus->u2PktTYpe, prSwRfb->prRxStatus->u2RxByteCount);
 
 				switch (prSwRfb->ucPacketType) {
 				case RX_PKT_TYPE_RX_DATA:
