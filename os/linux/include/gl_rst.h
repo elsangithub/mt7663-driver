@@ -90,6 +90,9 @@
 #define RST_FLAG_DO_CORE_DUMP      BIT(0)
 #define RST_FLAG_PREVENT_POWER_OFF BIT(1)
 
+#ifndef CFG_CHIP_RESET_HANG
+#define CFG_CHIP_RESET_HANG 0
+#endif
 #if CFG_CHIP_RESET_HANG
 #define SER_L0_HANG_RST_NONE		0
 #define SER_L0_HANG_RST_TRGING		1
@@ -294,6 +297,13 @@ void glGetRstReason(enum _ENUM_CHIP_RESET_REASON_TYPE_T
 u_int8_t glIsWmtCodeDump(void);
 #endif
 #else
-
+static inline void glResetInit(struct GLUE_INFO *prGlueInfo) {}
+static inline void glResetUninit(void) {}
+static inline void glSendResetRequest(void) {}
+u_int8_t kalIsResetting(void);
+static inline u_int8_t glResetTrigger(struct ADAPTER *prAdapter,
+			uint32_t u4RstFlag, const uint8_t *pucFile,
+			uint32_t u4Line) { return 0; }
+static inline void glGetRstReason(enum _ENUM_CHIP_RESET_REASON_TYPE_T eReason) {}
 #endif
 #endif /* _GL_RST_H */

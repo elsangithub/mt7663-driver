@@ -450,7 +450,7 @@
 #define MAX_BSSID_NUM			4	/* MAX BSSID number */
 
 
-#define CFG_CHIP_RESET_SUPPORT          1
+#define CFG_CHIP_RESET_SUPPORT          0
 #if CFG_CHIP_RESET_SUPPORT
 #define CFG_CHIP_RESET_HANG		0
 #endif
@@ -1087,7 +1087,7 @@
  * Flags of Random MAC support
  *------------------------------------------------------------------------------
  */
-#define CFG_SUPPORT_SCAN_RANDOM_MAC        (1)
+#define CFG_SUPPORT_SCAN_RANDOM_MAC        (0)
 
 /*------------------------------------------------------------------------------
  * Flags of Sniffer SUPPORT
@@ -1348,7 +1348,7 @@
  *------------------------------------------------------------------------------
  */
 #ifndef CFG_SUPPORT_SER
-#define CFG_SUPPORT_SER			1
+#define CFG_SUPPORT_SER			0
 #endif
 
 

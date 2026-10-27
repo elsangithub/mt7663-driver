@@ -512,6 +512,14 @@ u_int8_t nicSerIsWaitingReset(IN struct ADAPTER *prAdapter);
 u_int8_t nicSerIsTxStop(IN struct ADAPTER *prAdapter);
 u_int8_t nicSerIsRxStop(IN struct ADAPTER *prAdapter);
 void nicSerReInitBeaconFrame(IN struct ADAPTER *prAdapter);
+#else
+static inline void nicSerStopTxRx(IN struct ADAPTER *prAdapter) {}
+static inline void nicSerStopTx(IN struct ADAPTER *prAdapter) {}
+static inline void nicSerStartTxRx(IN struct ADAPTER *prAdapter) {}
+static inline u_int8_t nicSerIsWaitingReset(IN struct ADAPTER *prAdapter) { return 0; }
+static inline u_int8_t nicSerIsTxStop(IN struct ADAPTER *prAdapter) { return 0; }
+static inline u_int8_t nicSerIsRxStop(IN struct ADAPTER *prAdapter) { return 0; }
+static inline void nicSerReInitBeaconFrame(IN struct ADAPTER *prAdapter) {}
 
 #if defined(_HIF_USB)
 void nicSerSyncTimerHandler(IN struct ADAPTER *prAdapter,

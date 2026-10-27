@@ -1312,7 +1312,6 @@ kalDevPortRead(IN struct GLUE_INFO *prGlueInfo,
 	uint8_t *pucDst = NULL;
 	int count = u4Len;
 	int ret = 0;
-	int bNum = 0;
 
 #if (MTK_WCN_HIF_SDIO == 0)
 	struct sdio_func *prSdioFunc = NULL;
