@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config MT7663
+	tristate "MediaTek MT7663 SDIO WiFi support (proprietary fullmac)"
+	depends on CFG80211
+	depends on MMC
+	select WIRELESS_EXT
+	select WEXT_PRIV
+	help
+	  This option enables support for the MediaTek MT7663 / MT7661 802.11ac
+	  WiFi combo chip connected via SDIO, using the
+	  MediaTek proprietary fullmac driver stack.
+
+	  The WiFi firmware files (WIFI_RAM_CODE_MT7663.bin etc.) must be
+	  present in /lib/firmware or /lib/firmware/mediatek on the target system.
+	  The calibrated EEPROM file (EEPROM_MT7663.bin, 1024 bytes) and config file
+	  (wifi_mt7661.cfg) must be present in /lib/firmware.
+
+	  To compile this driver as a module, choose M here: the module
+	  will be called wlan_mt7663_sdio.

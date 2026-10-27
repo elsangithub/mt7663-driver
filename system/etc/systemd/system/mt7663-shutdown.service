@@ -1,0 +1,12 @@
+[Unit]
+Description=Unbind MT7663 SDIO controller cleanly before reboot/shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo ffe03000.mmc > /sys/bus/platform/drivers/meson-gx-mmc/unbind 2>/dev/null || true'
+TimeoutStartSec=2
+
+[Install]
+WantedBy=shutdown.target reboot.target halt.target
