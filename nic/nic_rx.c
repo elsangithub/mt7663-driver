@@ -3637,7 +3637,6 @@ void nicRxProcessMgmtPacket(IN struct ADAPTER *prAdapter,
 	ucSubtype = (*(uint8_t *) (prSwRfb->pvHeader) &
 		     MASK_FC_SUBTYPE) >> OFFSET_OF_FC_SUBTYPE;
 	if (ucSubtype == MAC_FRAME_BEACON || ucSubtype == MAC_FRAME_PROBE_RSP) {
-		printk_ratelimited(KERN_ERR "[rx-beacon/probe] subtype=%u\n", ucSubtype);
 	}
 
 #if CFG_RX_PKTS_DUMP
@@ -3941,7 +3940,6 @@ void nicRxProcessRFBs(IN struct ADAPTER *prAdapter)
 					nicRxCheckWakeupReason(prAdapter,
 							       prSwRfb);
 #endif
-				printk_ratelimited(KERN_ERR "[rx-rfb] ucPacketType=%u u2PktTYpe=0x%04X byteCount=%u\n",
 				       prSwRfb->ucPacketType, prSwRfb->prRxStatus->u2PktTYpe, prSwRfb->prRxStatus->u2RxByteCount);
 
 				switch (prSwRfb->ucPacketType) {

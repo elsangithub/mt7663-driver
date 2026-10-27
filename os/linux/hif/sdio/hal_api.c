@@ -1574,7 +1574,7 @@ void halProcessRxInterrupt(IN struct ADAPTER *prAdapter)
 
 #if CFG_SDIO_INTR_ENHANCE
 #if CFG_SDIO_RX_AGG
-	halRxSDIOAggReceiveRFBs(prAdapter);
+	halRxSDIOEnhanceReceiveRFBs(prAdapter);
 #else
 	halRxSDIOEnhanceReceiveRFBs(prAdapter);
 #endif
