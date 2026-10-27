@@ -2868,7 +2868,6 @@ uint32_t scanProcessBeaconAndProbeResp(IN struct ADAPTER *prAdapter,
 	prAdapter->rWlanInfo.u4ScanDbgTimes1++;
 
 	if (prBssDesc) {
-		printk(KERN_ERR "[bcn-rx] SSID='%s' ch=%u band=%d rssi=%d\\n", prBssDesc->aucSSID, prBssDesc->ucChannelNum, prBssDesc->eBand, RCPI_TO_dBm(prBssDesc->ucRCPI));
 		/* Full2Partial: save channel info for later scan */
 		if (prScanInfo->fgIsScanForFull2Partial) {
 			log_dbg(SCN, TRACE, "Full2Partial: set channel=%d\n",
