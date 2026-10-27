@@ -68,6 +68,7 @@ cat << PRE > ${BUILD_DIR}/DEBIAN/prerm
 set -e
 
 echo "Removing mt7663 (${VERSION}) from DKMS..."
+ip link set wlan0 down 2>/dev/null || true
 modprobe -r wlan_mt7663_sdio 2>/dev/null || true
 dkms remove -m mt7663 -v ${VERSION} --all 2>/dev/null || true
 rm -f /etc/modules-load.d/wlan_mt7663_sdio.conf
