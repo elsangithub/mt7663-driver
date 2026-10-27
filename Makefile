@@ -27,7 +27,7 @@ MODULE_NAME := wlan_$(WIFI_TARGET)_$(HIF)
 $(info MODULE_NAME=====$(MODULE_NAME))
 export CONFIG_MTK_PREALLOC_MEMORY=n
 export CONFIG_SDIO_AGG_THREAD=n
-export CONFIG_MTK_TPENHANCE_MODE=y
+export CONFIG_MTK_TPENHANCE_MODE=n
 
 # ---------------------------------------------------
 # ALPS Setting
