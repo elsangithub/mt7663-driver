@@ -1,0 +1,11 @@
+[Unit]
+Description=Wi-Fi MT7663 Multi-Core IRQ and RPS Optimizer
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'WIFI_IRQ=$(awk -F: "/ffe03000.mmc/ {gsub(/ /, \"\", $1); print $1}" /proc/interrupts 2>/dev/null); [ -n "$WIFI_IRQ" ] && [ -d "/proc/irq/$WIFI_IRQ" ] && echo 2,3 > /proc/irq/$WIFI_IRQ/smp_affinity_list; [ -d /sys/class/net/wlan0/queues/rx-0 ] && echo e > /sys/class/net/wlan0/queues/rx-0/rps_cpus 2>/dev/null || true'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

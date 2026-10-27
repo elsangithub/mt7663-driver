@@ -2202,6 +2202,12 @@ void halProcessAbnormalInterrupt(IN struct ADAPTER *prAdapter)
 			HAL_MCR_WR(prAdapter, MCR_WASR, u4Data);
 	}
 
+	if (u4Data & (WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW)) {
+		u4Data &= ~(WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW);
+		if (!u4Data)
+			return;
+	}
+
 	halPollDbgCr(prAdapter, 5);
 
 	halPrintIntStatus(prAdapter);

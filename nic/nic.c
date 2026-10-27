@@ -715,6 +715,14 @@ void nicProcessAbnormalInterrupt(IN struct ADAPTER
 	if (u4Wasr) {
 		HAL_MCR_WR(prAdapter, MCR_WASR, u4Wasr);
 	}
+
+	/* Fast-path: clear transient RX FIFO underflows instantly without stalling SDIO bus or spamming logs */
+	if (u4Wasr & (WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW)) {
+		u4Wasr &= ~(WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW);
+		if (!u4Wasr)
+			return;
+	}
+
 	printk_ratelimited(KERN_ERR "[ABNORMAL_INT] u4IntStatus=0x%08X WASR=0x%08X\n",
 	       prAdapter->u4IntStatus, u4Wasr);
 
