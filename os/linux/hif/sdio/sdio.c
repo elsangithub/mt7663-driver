@@ -1411,30 +1411,8 @@ kalDevPortWrite(IN struct GLUE_INFO *prGlueInfo,
 
 	sdio_claim_host(prSdioFunc);
 
-	/* Split buffer into multiple single block to workaround hifsys */
-	while (count >= prSdioFunc->cur_blksize) {
-		count -= prSdioFunc->cur_blksize;
-		bNum++;
-	}
-	if (count > 0 && bNum > 0)
-		bNum++;
-
-	if (bNum > 0) {		/* block mode */
-		ret = sdio_writesb(prSdioFunc, u2Port, pucSrc, prSdioFunc->cur_blksize * bNum);
-
-#ifdef CONFIG_X86
-		/* ENE workaround */
-		{
-			int tmp;
-
-			sdio_writel(prSdioFunc, 0x0, SDIO_X86_WORKAROUND_WRITE_MCR, &tmp);
-		}
-#endif
-
-	} else {		/* byte mode */
-
-		ret = sdio_writesb(prSdioFunc, u2Port, pucSrc, count);
-	}
+	/* Write exact packet size to avoid TX FIFO overflow */
+	ret = sdio_writesb(prSdioFunc, u2Port, pucSrc, count);
 
 	sdio_release_host(prSdioFunc);
 #else
