@@ -1701,6 +1701,7 @@ u_int8_t kalDevWriteData(IN struct GLUE_INFO *prGlueInfo, IN struct MSDU_INFO *p
 	uint8_t *pucBuf;
 	uint32_t u4Length;
 	uint8_t ucTC;
+	uint32_t u4Lim;
 
 	SDIO_TIME_INTERVAL_DEC();
 
@@ -1712,13 +1713,21 @@ u_int8_t kalDevWriteData(IN struct GLUE_INFO *prGlueInfo, IN struct MSDU_INFO *p
 	prTxCtrl = &prAdapter->rTxCtrl;
 	pucOutputBuf = prTxCtrl->pucTxCoalescingBufPtr;
 
-	if (prTxCtrl->u4WrIdx + ALIGN_4(u4Length) > prAdapter->u4CoalescingBufCachedSize) {
+	u4Lim = prAdapter->u4CoalescingBufCachedSize;
+#if (MTK_WCN_HIF_SDIO == 0)
+	if (prHifInfo->func && prHifInfo->func->card && prHifInfo->func->card->host &&
+	    prHifInfo->func->card->host->max_req_size) {
+		u4Lim = min_t(uint32_t, u4Lim, prHifInfo->func->card->host->max_req_size);
+	}
+#endif
+
+	if (prTxCtrl->u4WrIdx + ALIGN_4(u4Length) > u4Lim) {
 		if ((prAdapter->u4CoalescingBufCachedSize - ALIGN_4(prTxCtrl->u4WrIdx)) >= HIF_TX_TERMINATOR_LEN) {
 			/* fill with single dword of zero as TX-aggregation termination */
 			*(uint32_t *) (&((pucOutputBuf)[ALIGN_4(prTxCtrl->u4WrIdx)])) = 0;
 		}
 
-		if (HAL_TEST_FLAG(prAdapter, ADAPTER_FLAG_HW_ERR) == FALSE) {
+		if (HAL_TEST_FLAG(prAdapter, ADAPTER_FLAG_HW_ERR) == FALSE && prTxCtrl->u4WrIdx > 0) {
 			if (kalDevPortWrite(prGlueInfo, MCR_WTDR1, prTxCtrl->u4WrIdx,
 					pucOutputBuf, prAdapter->u4CoalescingBufCachedSize) == FALSE) {
 				HAL_SET_FLAG(prAdapter, ADAPTER_FLAG_HW_ERR);

@@ -2493,6 +2493,7 @@ static struct wireless_dev *wlanNetCreate(void *pvData,
 
 	/* 4 <3.1.2> co-relate with wiphy bi-directionally */
 	prGlueInfo->prDevHandler->mtu = 1408;
+	prGlueInfo->prDevHandler->max_mtu = 1408;
 	prGlueInfo->prDevHandler->ieee80211_ptr = prWdev;
 
 	prWdev->netdev = prGlueInfo->prDevHandler;
