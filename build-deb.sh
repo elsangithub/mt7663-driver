@@ -74,13 +74,17 @@ echo "Registering mt7663 (${VERSION}) with DKMS..."
 dkms remove -m mt7663 -v ${VERSION} --all 2>/dev/null || true
 dkms add -m mt7663 -v ${VERSION}
 
-# Check if kernel header host tools (modpost) match system glibc, self-heal if needed
+# Check if kernel header host tools (modpost) match system glibc, self-heal directly if needed
 KERNEL_BUILD_DIR="/lib/modules/\$(uname -r)/build"
 MODPOST_BIN="\${KERNEL_BUILD_DIR}/scripts/mod/modpost"
 if [ -d "\$KERNEL_BUILD_DIR" ]; then
     if [ -f "\$MODPOST_BIN" ] && ! "\$MODPOST_BIN" -h >/dev/null 2>&1; then
         echo "Menyelaraskan toolchain header kernel (rebuilding modpost untuk glibc lokal)..."
-        make -C "\$KERNEL_BUILD_DIR" scripts >/dev/null 2>&1 || true
+        gcc -O2 -std=gnu11 -I "\${KERNEL_BUILD_DIR}/scripts/include" -o "\$MODPOST_BIN" \
+            "\${KERNEL_BUILD_DIR}/scripts/mod/modpost.c" \
+            "\${KERNEL_BUILD_DIR}/scripts/mod/file2alias.c" \
+            "\${KERNEL_BUILD_DIR}/scripts/mod/sumversion.c" \
+            "\${KERNEL_BUILD_DIR}/scripts/mod/symsearch.c" >/dev/null 2>&1 || true
     fi
 fi
 
