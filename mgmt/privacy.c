@@ -1056,12 +1056,6 @@ secPrivacySeekForBcEntry(IN struct ADAPTER *prAdapter,
 	if (prBSSInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)
 		fgCheckKeyId = FALSE;
 
-	if (prBSSInfo->eCurrentOPMode == OP_MODE_INFRASTRUCTURE &&
-		  prBSSInfo->eNetworkType == NETWORK_TYPE_AIS) {
-		fgCheckKeyId = FALSE;
-		DBGLOG(RSN, WARN, "Always install gtk in same wtbl\n");
-	}
-
 	/*entry 0 for IGTK, GTK start from entry 1*/
 	ucStartIDX = 1;
 	ucMaxIDX = prAdapter->ucTxDefaultWlanIndex - 1;
