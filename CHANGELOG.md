@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.5] - 2026-10-28
 ### Added
+- **Linux 6.18+ Modern Kernel Support**: Added backward/forward compatibility bridge for Linux 6.18+ timer subsystem modernization (`timer_delete_sync()`, `timer_delete()`, and `container_of` from_timer mapping) alongside `FB_EVENT_BLANK` fallback, while maintaining 100% native compatibility with Linux 6.12 LTS.
 - **Pre-installation Kernel Guard (`preinst`)**: Automatically detects running kernel during package installation (`dpkg -i`) and warns if running on Kernel < 6.0, detailing FiberHome HG680-FJ's hardware DTB dependency on `meson-g12-pwm-v2`.
 - **Makefile Kernel Architecture Check**: Emits diagnostic compile-time warning if targeting Kernel < 6.0.
 - **Kernel Focus Realignment**: Shifted project focus and roadmap exclusively to modern 6.x series (Linux 6.12+ LTS & 6.18+ LTS).

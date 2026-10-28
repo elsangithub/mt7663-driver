@@ -127,6 +127,21 @@
 #include <linux/kernel.h>	/* bitops.h */
 
 #include <linux/timer.h>	/* struct timer_list */
+#ifndef from_timer
+#define from_timer(var, callback_timer, timer_fieldname) \
+	container_of(callback_timer, typeof(*var), timer_fieldname)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0))
+#ifndef del_timer_sync
+#define del_timer_sync(t) timer_delete_sync(t)
+#endif
+#ifndef del_timer
+#define del_timer(t) timer_delete(t)
+#endif
+#endif
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x01
+#endif
 #include <linux/jiffies.h>	/* jiffies */
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
