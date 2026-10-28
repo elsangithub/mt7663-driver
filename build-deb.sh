@@ -11,22 +11,14 @@ echo "Building Debian package for ${PACKAGE}_${VERSION}..."
 rm -rf ${BUILD_DIR}
 mkdir -p ${SRC_DIR}
 mkdir -p ${BUILD_DIR}/DEBIAN
-mkdir -p ${BUILD_DIR}/etc/modprobe.d
-mkdir -p ${BUILD_DIR}/etc/systemd/system
-mkdir -p ${BUILD_DIR}/etc/udev/rules.d
-mkdir -p ${BUILD_DIR}/etc/sysctl.d
-mkdir -p ${BUILD_DIR}/lib/firmware
 
-# Copy source tree to /usr/src/mt7663-${VERSION} for DKMS
-rsync -a --exclude=".git" --exclude="system" --exclude="*.o" --exclude="*.ko" --exclude="*.mod" --exclude="*.mod.c" --exclude="*.cmd" --exclude="*.deb" ./ ${SRC_DIR}/
+# 1. Copy pure driver source code directly to /usr/src/mt7663-${VERSION} (no junk)
+cp -a chips common include mgmt nic os prealloc Makefile Kconfig dkms.conf CHANGELOG.md README.md ${SRC_DIR}/
 
-# Copy system configurations, services, rules, and firmware
-cp system/etc/modprobe.d/blacklist-mt7663-bluetooth.conf ${BUILD_DIR}/etc/modprobe.d/
-cp system/etc/systemd/system/* ${BUILD_DIR}/etc/systemd/system/
-cp system/etc/udev/rules.d/* ${BUILD_DIR}/etc/udev/rules.d/
-cp system/etc/sysctl.d/* ${BUILD_DIR}/etc/sysctl.d/
-cp system/lib/firmware/* ${BUILD_DIR}/lib/firmware/
+# 2. Copy ALL system integration files at once from unified system/ directory
+cp -a system/* ${BUILD_DIR}/
 chmod 644 ${BUILD_DIR}/lib/firmware/*
+chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
 
 cat << CTRL > ${BUILD_DIR}/DEBIAN/control
 Package: mt7663-dkms
@@ -93,6 +85,7 @@ modprobe wlan_mt7663_sdio 2>/dev/null || true
 sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
 udevadm control --reload-rules 2>/dev/null || true
 udevadm trigger 2>/dev/null || true
+/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
 
 # Clean up old external service if present
 if [ -d /run/systemd/system ]; then
