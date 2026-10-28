@@ -1,1 +1,2 @@
-ACTION=="add", SUBSYSTEM=="net", KERNEL=="wlan*", RUN+="/bin/sh -c 'echo e > /sys/class/net/%k/queues/rx-0/rps_cpus; echo 4096 > /sys/class/net/%k/queues/rx-0/rps_flow_cnt 2>/dev/null || true'"
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wlan*", RUN+="/usr/lib/udev/wlan-irq-tune.sh"
+

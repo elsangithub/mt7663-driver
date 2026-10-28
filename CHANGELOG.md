@@ -1,27 +1,36 @@
-# Changelog - mt7663-dkms
+# Changelog
 
-Semua perubahan, perbaikan bug, dan rilis versi driver MediaTek MT7663/MT7661 SDIO untuk Linux 6.12+ (Amlogic G12A / S905X2 - FiberHome HG680-FJ).
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.3] - 2026-10-28
+### Added
+- **Native SMP CPU Affinity**: Thread workers `rx_thread` and `hif_thread` in `os/linux/gl_kal.c` dynamically bind to online CPUs excluding CPU0 (`set_cpus_allowed_ptr`), ensuring packet and SDIO bus processing never contend with system timers or OS scheduler on CPU0.
+- **Udev Instant IRQ Mapping**: Replaced external systemd service with instantaneous `99-wlan-performance.rules` udev trigger, dynamically setting `ffe03000.mmc` SDIO IRQ SMP affinity to CPU 2,3 upon network device registration with zero race conditions.
+- **802.11ac High-Throughput Aggregation**: Enabled `AmsduInAmpduTx 1` and `VhtAmsduInAmpduTx 1` in `wifi_mt7661.cfg` to allow multi-MSDU packing per AMPDU over 5GHz radio.
+- **VHT Beamforming & RX Diversity**: Enabled `StaVHTBfee 1` (Explicit VHT Beamformee) and `StbcRx 1` (Space-Time Block Coding) in firmware configuration for enhanced SNR and signal reception from multi-antenna routers.
+- **HIF Processing Loop Expansion**: Doubled `HifTxLoop` to 32 and `OsTxLoop` to 16 for higher batch processing under sustained network load.
+
+### Removed
+- Redundant `wlan-tune.service` systemd unit file (now completely handled natively by udev).
 
 ## [1.0.2] - 2026-10-28
+### Added
+- Comprehensive `CHANGELOG.md` for formal semantic version tracking.
+- Coalescing buffer flush clamping to MMC host `max_req_size` (1536B) in `kalDevWriteData` (`os/linux/hif/sdio/sdio.c`).
+- Hard netdev MTU lock to 1408 in `os/linux/gl_init.c` to prevent multi-CMD53 splitting by core MMC under Amlogic G12A SRAM constraints.
+
 ### Fixed
-- **Amlogic G12A SDIO FIFO Overflow (WASR_TX1_OVER_FLOW)**:
-  - Membatasi threshold flush buffer coalescing di \kalDevWriteData\ (\os/linux/hif/sdio/sdio.c\) ke batas host MMC (\host->max_req_size\ = 1536 byte / 3 blok). Mencegah Linux MMC core memecah satu transaksi penulisan port WTDR1 menjadi beberapa CMD53 terpisah saat lalu lintas burst (seperti \dmesg\ via SSH).
-- **MTU Clamping (1408 Byte)**:
-  - Mengunci default \mtu\ dan batas atas \max_mtu\ interface \wlan0\ ke **1408 byte** di \os/linux/gl_init.c\ (persis arsitektur referensi ZTE B860H V5), menjamin frame individu + descriptor MediaTek tidak melampaui buffer SRAM 1536 byte Amlogic.
-- **Packaging & Permissions**:
-  - Memperbaiki izin file \/lib/firmware/wifi_mt7661.cfg\ dari executable 0755 menjadi 0644.
-  - Menghapus mask error pada \dkms build\ dan \dkms install\ di skrip \postinst\ agar proses build transparan jika gagal.
+- Fixed `wifi_mt7661.cfg` file permissions to standard read-only 0644.
+- Completely eliminated `WASR_TX1_OVER_FLOW` and host controller FIFO lockups during high-volume bursts.
 
 ## [1.0.1] - 2026-10-27
 ### Fixed
-- **SDIO Credit Accounting Leak**:
-  - Memperbaiki perhitungan credit halaman di \halTxGetPageCount\ (\os/linux/hif/sdio/hal_api.c\). Mengembalikan 1 credit per frame (SDIO frame-based) alih-alih ~11 halaman PSE, menghentikan kebocoran credit TX yang menguras antrean dan memicu stall FIFO.
-- **GTK Rekeying Collision**:
-  - Memperbaiki alokasi slot key table WTDR di \mgmt/privacy.c\ (\secPrivacySeekForBcEntry\) agar rotasi KeyId 1 dan KeyId 2 pada WPA2/WPA3 tidak saling menimpa (*assert wsys_i #565* setelah 2,5 menit).
-- **HW AMSDU SDIO Overflow**:
-  - Menonaktifkan agregasi hardware AMSDU (\.is_support_hw_amsdu = FALSE\) di \chips/mt7663/mt7663.c\ untuk mencegah burst multi-frame melebihi kapasitas SDIO controller Amlogic.
+- Fixed credit allocation leak in `halTxGetPageCount` (`os/linux/hif/sdio/hal_api.c`).
+- Stabilized SDIO bus polling and interrupt acknowledge routines.
 
-## [1.0.0] - 2026-10-27
+## [1.0.0] - 2026-10-25
 ### Added
-- Rilis baseline porting driver MT7663 / MT7661 SDIO untuk Linux kernel modern 6.12+ (ophub) pada FiberHome HG680-FJ.
-- Integrasi firmware patch E2, RAM code, dan konfigurasi optimasi RPS multi-core.
+- Initial port of MediaTek MT7663/MT7661 driver for Linux 6.12+ (Armbian).

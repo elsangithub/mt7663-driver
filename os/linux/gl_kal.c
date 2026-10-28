@@ -3420,6 +3420,14 @@ int hif_thread(void *data)
 
 	set_user_nice(current, prAdapter->rWifiVar.cThreadNice);
 
+	/* Native SMP CPU Affinity: Keep HIF processing off CPU0 */
+	if (num_online_cpus() > 1) {
+		struct cpumask mask;
+		cpumask_copy(&mask, cpu_online_mask);
+		cpumask_clear_cpu(0, &mask);
+		set_cpus_allowed_ptr(current, &mask);
+	}
+
 	while (TRUE) {
 
 		if (prGlueInfo->ulFlag & GLUE_FLAG_HALT
@@ -3573,13 +3581,13 @@ int rx_thread(void *data)
 
 	set_user_nice(current,
 		      prGlueInfo->prAdapter->rWifiVar.cThreadNice);
-#if CFG_SUPPORT_MTK_CPU_SCHED
-	cpumask_clear_cpu(0, mask);
-	cpumask_set_cpu(1, mask);
-	cpumask_set_cpu(2, mask);
-	cpumask_set_cpu(3, mask);
-	mt_sched_setaffinity(0, mask);
-#endif
+	/* Native SMP CPU Affinity: Keep packet processing off CPU0 */
+	if (num_online_cpus() > 1) {
+		struct cpumask mask;
+		cpumask_copy(&mask, cpu_online_mask);
+		cpumask_clear_cpu(0, &mask);
+		set_cpus_allowed_ptr(current, &mask);
+	}
 	prTempRxQue = &rTempRxQue;
 
 	while (TRUE) {

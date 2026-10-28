@@ -2,7 +2,7 @@
 set -e
 
 PACKAGE=mt7663-dkms
-VERSION=1.0.2
+VERSION=1.0.3
 BUILD_DIR=/tmp/${PACKAGE}_build
 SRC_DIR=${BUILD_DIR}/usr/src/mt7663-${VERSION}
 
@@ -30,7 +30,7 @@ chmod 644 ${BUILD_DIR}/lib/firmware/*
 
 cat << 'CTRL' > ${BUILD_DIR}/DEBIAN/control
 Package: mt7663-dkms
-Version: 1.0.2
+Version: 1.0.3
 Architecture: all
 Maintainer: Van der Decken <root@hermes>
 Depends: dkms, build-essential
@@ -38,18 +38,20 @@ Section: kernel
 Priority: optional
 Description: MediaTek MT7663 SDIO Wi-Fi driver module (DKMS)
  Patched high-performance Linux driver for MediaTek MT7663 SDIO Wi-Fi,
- tuned for Linux 6.12+ with multi-core RPS, IRQ affinity, and underflow fast-path.
+ tuned for Linux 6.12+ with native SMP CPU affinity, udev instant IRQ mapping,
+ and 802.11ac A-MSDU/Beamforming throughput boost.
 CTRL
 
 cat << 'POST' > ${BUILD_DIR}/DEBIAN/postinst
 #!/bin/sh
 set -e
 
-echo "Registering mt7663 (1.0.2) with DKMS..."
+echo "Registering mt7663 (1.0.3) with DKMS..."
 dkms remove -m mt7663 -v 1.0.2 --all 2>/dev/null || true
-dkms add -m mt7663 -v 1.0.2 || true
-dkms build -m mt7663 -v 1.0.2 || true
-dkms install -m mt7663 -v 1.0.2 || true
+dkms remove -m mt7663 -v 1.0.3 --all 2>/dev/null || true
+dkms add -m mt7663 -v 1.0.3 || true
+dkms build -m mt7663 -v 1.0.3 || true
+dkms install -m mt7663 -v 1.0.3 || true
 
 echo "Configuring automatic kernel module loading..."
 echo wlan_mt7663_sdio > /etc/modules-load.d/wlan_mt7663_sdio.conf
@@ -61,12 +63,13 @@ sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
 udevadm control --reload-rules 2>/dev/null || true
 udevadm trigger 2>/dev/null || true
 
-# Enable services
+# Clean up old external service if present
 if [ -d /run/systemd/system ]; then
     systemctl daemon-reload 2>/dev/null || true
+    systemctl stop wlan-tune.service 2>/dev/null || true
+    systemctl disable wlan-tune.service 2>/dev/null || true
+    rm -f /etc/systemd/system/wlan-tune.service 2>/dev/null || true
     systemctl enable mt7663-shutdown.service 2>/dev/null || true
-    systemctl enable wlan-tune.service 2>/dev/null || true
-    systemctl restart wlan-tune.service 2>/dev/null || true
 fi
 POST
 chmod 755 ${BUILD_DIR}/DEBIAN/postinst
@@ -75,15 +78,14 @@ cat << 'PRE' > ${BUILD_DIR}/DEBIAN/prerm
 #!/bin/sh
 set -e
 
-echo "Removing mt7663 (1.0.2) from DKMS..."
+echo "Removing mt7663 (1.0.3) from DKMS..."
 ip link set wlan0 down 2>/dev/null || true
 modprobe -r wlan_mt7663_sdio 2>/dev/null || true
-dkms remove -m mt7663 -v 1.0.2 --all 2>/dev/null || true
+dkms remove -m mt7663 -v 1.0.3 --all 2>/dev/null || true
 rm -f /etc/modules-load.d/wlan_mt7663_sdio.conf
 
 if [ -d /run/systemd/system ]; then
     systemctl disable mt7663-shutdown.service 2>/dev/null || true
-    systemctl disable wlan-tune.service 2>/dev/null || true
     systemctl daemon-reload 2>/dev/null || true
 fi
 PRE
