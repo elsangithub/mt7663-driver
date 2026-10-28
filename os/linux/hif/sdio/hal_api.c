@@ -1607,7 +1607,7 @@ uint32_t halTxGetPageCount(IN struct ADAPTER *prAdapter, IN uint32_t u4FrameLeng
 	if (prChipInfo->is_support_cr4)
 		return 1;
 
-	return halTxGetPageCountPSE(prAdapter, u4FrameLength);
+	return 1; /* SDIO frame-based accounting */
 }
 
 uint32_t halDumpHifStatus(IN struct ADAPTER *prAdapter, IN uint8_t *pucBuf, IN uint32_t u4Max)
