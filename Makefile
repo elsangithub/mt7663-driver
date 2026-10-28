@@ -25,6 +25,19 @@ endif
 export CONFIG_MTK_COMBO_WIFI_HIF=$(HIF)
 MODULE_NAME := wlan_$(WIFI_TARGET)_$(HIF)
 $(info MODULE_NAME=====$(MODULE_NAME))
+
+
+ifneq ($(KERNELRELEASE),)
+    KERNEL_MAJOR := $(shell echo $(KERNELRELEASE) | cut -d. -f1)
+    ifeq ($(shell [ "$(KERNEL_MAJOR)" -lt 6 ] && echo y),y)
+        $(warning ========================================================================)
+        $(warning [MT7663] WARNING: Compiling for Linux $(KERNELRELEASE) (< 6.0))
+        $(warning FiberHome HG680-FJ requires Kernel 6.x+ (e.g. 6.12 / 6.18) due to)
+        $(warning Device Tree dependency on meson-g12-pwm-v2 for SDIO clock supply.)
+        $(warning Wi-Fi will NOT be detected on Kernel 5.x on this board!)
+        $(warning =======================================================================)
+    endif
+endif
 export CONFIG_MTK_PREALLOC_MEMORY=n
 export CONFIG_SDIO_AGG_THREAD=n
 export CONFIG_MTK_TPENHANCE_MODE=n

@@ -28,9 +28,9 @@ cp system/etc/sysctl.d/* ${BUILD_DIR}/etc/sysctl.d/
 cp system/lib/firmware/* ${BUILD_DIR}/lib/firmware/
 chmod 644 ${BUILD_DIR}/lib/firmware/*
 
-cat << 'CTRL' > ${BUILD_DIR}/DEBIAN/control
+cat << CTRL > ${BUILD_DIR}/DEBIAN/control
 Package: mt7663-dkms
-Version: 1.0.3
+Version: ${VERSION}
 Architecture: all
 Maintainer: Van der Decken <root@hermes>
 Depends: dkms, build-essential
@@ -38,20 +38,39 @@ Section: kernel
 Priority: optional
 Description: MediaTek MT7663 SDIO Wi-Fi driver module (DKMS)
  Patched high-performance Linux driver for MediaTek MT7663 SDIO Wi-Fi,
- tuned for Linux 6.12+ with native SMP CPU affinity, udev instant IRQ mapping,
+ tuned for Linux 6.12+ / 6.18+ with native SMP CPU affinity, udev instant IRQ mapping,
  and 802.11ac A-MSDU/Beamforming throughput boost.
 CTRL
 
-cat << 'POST' > ${BUILD_DIR}/DEBIAN/postinst
+cat << 'PREINST' > ${BUILD_DIR}/DEBIAN/preinst
 #!/bin/sh
 set -e
 
-echo "Registering mt7663 (1.0.3) with DKMS..."
-dkms remove -m mt7663 -v 1.0.2 --all 2>/dev/null || true
+KERNEL_MAJOR=$(uname -r | cut -d. -f1)
+if [ "$KERNEL_MAJOR" -lt 6 ] 2>/dev/null; then
+    echo "======================================================================="
+    echo "  [PERINGATAN] Kernel $(uname -r) TIDAK DIDUKUNG di FiberHome HG680-FJ!"
+    echo "  Device Tree HG680-FJ membutuhkan driver 'meson-g12-pwm-v2' yang"
+    echo "  hanya tersedia pada Kernel Linux 6.x ke atas (rekomendasi: 6.12 / 6.18+)."
+    echo "  Pada Kernel 5.x, clock SDIO tidak aktif sehingga Wi-Fi tidak terdeteksi."
+    echo "  Silakan gunakan kernel 6.x: armbian-update -k 6.12"
+    echo "======================================================================="
+fi
+exit 0
+PREINST
+chmod 755 ${BUILD_DIR}/DEBIAN/preinst
+
+cat << POST > ${BUILD_DIR}/DEBIAN/postinst
+#!/bin/sh
+set -e
+
+echo "Registering mt7663 (${VERSION}) with DKMS..."
+dkms remove -m mt7663 -v 1.0.2 --all 2.>/dev/null || true
 dkms remove -m mt7663 -v 1.0.3 --all 2>/dev/null || true
-dkms add -m mt7663 -v 1.0.3 || true
-dkms build -m mt7663 -v 1.0.3 || true
-dkms install -m mt7663 -v 1.0.3 || true
+dkms remove -m mt7663 -v ${VERSION} --all 2>/dev/null || true
+dkms add -m mt7663 -v ${VERSION} || true
+dkms build -m mt7663 -v ${VERSION} || true
+dkms install -m mt7663 -v ${VERSION} || true
 
 echo "Configuring automatic kernel module loading..."
 echo wlan_mt7663_sdio > /etc/modules-load.d/wlan_mt7663_sdio.conf
@@ -74,21 +93,21 @@ fi
 POST
 chmod 755 ${BUILD_DIR}/DEBIAN/postinst
 
-cat << 'PRE' > ${BUILD_DIR}/DEBIAN/prerm
+cat << PRERM > ${BUILD_DIR}/DEBIAN/prerm
 #!/bin/sh
 set -e
 
-echo "Removing mt7663 (1.0.3) from DKMS..."
+echo "Removing mt7663 (${VERSION}) from DKMS..."
 ip link set wlan0 down 2>/dev/null || true
 modprobe -r wlan_mt7663_sdio 2>/dev/null || true
-dkms remove -m mt7663 -v 1.0.3 --all 2>/dev/null || true
+dkms remove -m mt7663 -v ${VERSION} --all 2>/dev/null || true
 rm -f /etc/modules-load.d/wlan_mt7663_sdio.conf
 
 if [ -d /run/systemd/system ]; then
     systemctl disable mt7663-shutdown.service 2>/dev/null || true
     systemctl daemon-reload 2>/dev/null || true
 fi
-PRE
+PRERM
 chmod 755 ${BUILD_DIR}/DEBIAN/prerm
 
 dpkg-deb --build ${BUILD_DIR} ${PACKAGE}_${VERSION}_all.deb

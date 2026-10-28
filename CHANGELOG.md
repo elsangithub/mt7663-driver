@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.5] - 2026-10-28
+### Added
+- **Pre-installation Kernel Guard (`preinst`)**: Automatically detects running kernel during package installation (`dpkg -i`) and warns if running on Kernel < 6.0, detailing FiberHome HG680-FJ's hardware DTB dependency on `meson-g12-pwm-v2`.
+- **Makefile Kernel Architecture Check**: Emits diagnostic compile-time warning if targeting Kernel < 6.0.
+- **Kernel Focus Realignment**: Shifted project focus and roadmap exclusively to modern 6.x series (Linux 6.12+ LTS & 6.18+ LTS).
+
 ### Changed
 - **Silent Production Logging**: Completely silenced all development debug messages (`[scan-start]`, `[scan-set-ch]`, `[wlanoidSetAddKey]`, `[wlan-ack]`, `[wlan-cfg]`, and `[wlan-bufbin]`), eliminating red error text and log spam in `dmesg`.
 - **Clean Kernel Dmesg**: Driver is now whisper-quiet and zero-spam in production kernel environments.

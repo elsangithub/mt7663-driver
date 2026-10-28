@@ -1,5 +1,8 @@
+#include <linux/version.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0))
 #ifndef GRO_DROP
 #define GRO_DROP (-1)
+#endif
 #endif
 #include <linux/sched/clock.h>
 /*******************************************************************************

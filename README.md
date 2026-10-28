@@ -1,9 +1,13 @@
-# MediaTek MT7663 / MT7661 SDIO Wi-Fi Driver for Linux (Kernel 5.10 - 6.12+ LTS)
+# MediaTek MT7663 / MT7661 SDIO Wi-Fi Driver for Linux (Kernel 6.12+ / 6.18+ LTS)
 ### High-Performance Standalone Wi-Fi for Amlogic TV Boxes (Armbian / Ophub)
 
 Patched, high-performance out-of-tree Linux kernel driver for the **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac combo module.
 
-Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and validated on the **FiberHome HG680-FJ** running **Armbian Ophub** across Linux kernels **5.10.x, 5.15.x, 6.1.x, and 6.12.x LTS**.
+Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and validated on the **FiberHome HG680-FJ** running **Armbian Ophub** on **Linux Kernel 6.12.x / 6.18+ LTS**.
+
+> [!WARNING]
+> **Kernel 5.x (5.10 / 5.15) is NOT supported on FiberHome HG680-FJ!**
+> The HG680-FJ Device Tree (meson-g12a-hg680-fj.dtb) requires mlogic,meson-g12-pwm-v2 to supply the 32.768 KHz SDIO reference clock. This driver is only present in Linux 6.x+. On Kernel 5.x, SDIO hardware power and clock remain uninitialized, preventing Wi-Fi hardware detection. Always use Linux 6.12+ or 6.18+ on this device.
 
 ---
 
