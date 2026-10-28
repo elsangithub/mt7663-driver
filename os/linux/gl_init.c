@@ -2837,8 +2837,7 @@ void wlanGetParseConfig(struct ADAPTER *prAdapter)
 		int32_t req_ret = kalRequestFirmware(WIFI_CFG_FN, pucConfigBuf,
 			   WLAN_CFG_FILE_BUF_SIZE, &u4ConfigReadLen,
 			   prAdapter->prGlueInfo->prDev);
-		printk(KERN_INFO "[wlan-cfg] kalRequestFirmware(%s) = %d len=%u\n",
-		       WIFI_CFG_FN, req_ret, u4ConfigReadLen);
+		/* debug log removed */
 		if (req_ret == 0) {
 			/* ToDo:: Nothing */
 		} else if (kalReadToFile("/data/misc/wifi.cfg",
@@ -2900,8 +2899,7 @@ void wlanGetConfig(struct ADAPTER *prAdapter)
 		int32_t req_cfg = kalRequestFirmware(WIFI_CFG_FN, pucConfigBuf,
 			   WLAN_CFG_FILE_BUF_SIZE, &u4ConfigReadLen,
 			   prAdapter->prGlueInfo->prDev);
-		printk(KERN_INFO "[wlan-cfg] in wlanGetConfig: kalRequestFirmware(%s) = %d len=%u\n",
-		       WIFI_CFG_FN, req_cfg, u4ConfigReadLen);
+		/* debug log removed */
 		if (req_cfg == 0) {
 			/* ToDo:: Nothing */
 		} else if (kalReadToFile("/data/misc/wifi/wifi.cfg",
@@ -3138,9 +3136,7 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 			= NULL;
 #endif
 
-	printk(KERN_INFO "[wlan-bufbin] entered: fgSupport=%d ucEfuseBufferModeCal=%d\n",
-	       prAdapter->fgIsSupportPowerOnSendBufferModeCMD,
-	       prAdapter->rWifiVar.ucEfuseBufferModeCal);
+	/* debug log removed */
 
 	prChipInfo = prAdapter->chip_info;
 	chip_id = prChipInfo->chip_id;
@@ -3152,7 +3148,7 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 
 	if (prAdapter->fgIsSupportPowerOnSendBufferModeCMD == FALSE ||
 	    prAdapter->rWifiVar.ucEfuseBufferModeCal == 0) {
-		printk(KERN_INFO "[wlan-bufbin] EfuseBufferMode disabled: using on-chip hardware eFuse\n");
+		/* debug log removed */
 		return WLAN_STATUS_SUCCESS;
 	}
 
@@ -3223,15 +3219,14 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 		if (kalRequestFirmware(aucEeprom, pucConfigBuf,
 		    MAX_EEPROM_BUFFER_SIZE, &u4ContentLen, prGlueInfo->prDev)
 		    == 0) {
-			printk(KERN_INFO "[wlan-bufbin] request firmware %s OK, size=%u\n", aucEeprom, u4ContentLen);
+			/* debug log removed */
 		} else {
-			printk(KERN_ERR "[wlan-bufbin] can not find file %s\n", aucEeprom);
+			/* debug log removed */
 			goto label_exit;
 		}
 
 		if (u4ContentLen > MAX_EEPROM_BUFFER_SIZE) {
-			printk(KERN_ERR "[wlan-bufbin] u4ContentLen: %d > %d\n",
-			       u4ContentLen, MAX_EEPROM_BUFFER_SIZE);
+			/* debug log removed */
 			goto label_exit;
 		}
 
@@ -3241,7 +3236,7 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 
 		/* 1 <4> Send CMD with bin file content */
 		if (prBufferModeInfo->ucVersion != 0x02) {
-			printk(KERN_INFO "[wlan-bufbin] init prBufferModeInfo: ver=2 fmt=whole size=%u\n", u4ContentLen);
+			/* debug log removed */
 			prBufferModeInfo->ucVersion = 0x02;
 			prBufferModeInfo->ucFormatSupportBitmap = BIT(CONTENT_FORMAT_WHOLE_CONTENT);
 			prBufferModeInfo->u2EfuseTotalSize = u4ContentLen;
@@ -3279,9 +3274,7 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 			 CMD_TYPE_CAL_TIME_REDUCTION_SHFT);
 	prSetEfuseBufModeInfo->u2Count = u4ContentLen;
 
-	printk(KERN_INFO "[wlan-bufbin] Sending wlanoidConnacSetEfusBufferMode totalLen=%lu u2Count=%u\n",
-		(unsigned long)(OFFSET_OF(struct PARAM_CUSTOM_EFUSE_BUFFER_MODE_CONNAC_T, aBinContent) + u4ContentLen),
-		prSetEfuseBufModeInfo->u2Count);
+	/* debug log removed */
 
 	rStatus = kalIoctl(prGlueInfo, wlanoidConnacSetEfusBufferMode,
 		(void *)prSetEfuseBufModeInfo,
@@ -3289,7 +3282,7 @@ uint32_t wlanConnacDownloadBufferBin(struct ADAPTER
 		aBinContent) + u4ContentLen,
 		FALSE, TRUE, TRUE, &u4BufLen);
 
-	printk(KERN_INFO "[wlan-bufbin] kalIoctl returned rStatus=0x%x\n", rStatus);
+	/* debug log removed */
 	retWlanStat = WLAN_STATUS_SUCCESS;
 
 label_exit:
@@ -3977,7 +3970,7 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 	} else {
 		DBGLOG(INIT, ERROR, "wlanProbe: probe failed, reason:%d\n",
 		       eFailReason);
-		printk(KERN_ERR "[wlan-probe] failed: i4Status=%d eFailReason=%d\n", i4Status, eFailReason);
+		/* debug log removed */
 		switch (eFailReason) {
 		case FAIL_MET_INIT_PROCFS:
 			kalMetRemoveProcfs();

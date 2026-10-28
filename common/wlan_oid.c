@@ -2523,7 +2523,7 @@ wlanoidSetAddKey(IN struct ADAPTER *prAdapter, IN void *pvSetBuffer,
 		return WLAN_STATUS_ADAPTER_NOT_READY;
 	}
 	prNewKey = (struct PARAM_KEY *) pvSetBuffer;
-	printk(KERN_ERR "[wlanoidSetAddKey] keyIndex=0x%08x keyLen=%d cipher=%d len=%d\\n", prNewKey->u4KeyIndex, prNewKey->u4KeyLength, prNewKey->ucCipher, u4SetBufferLen);
+	/* debug log removed */
 	/* Verify the key structure length. */
 	if (prNewKey->u4Length > u4SetBufferLen) {
 		DBGLOG(RSN, WARN,
@@ -5301,7 +5301,7 @@ wlanoidConnacSetEfusBufferMode(IN struct ADAPTER *prAdapter,
 		   prSetEfuseBufModeInfo->aBinContent,
 		   u4EfuseContentSize);
 
-	printk(KERN_INFO "[wlan-bufbin] wlanoidConnacSetEfusBufferMode: sending ext cmd 0x21 u4QueryInfoLen=%u\n", u4QueryInfoLen);
+	/* debug log removed */
 	rWlanStatus = wlanSendSetQueryExtCmd(prAdapter,
 				CMD_ID_LAYER_0_EXT_MAGIC_NUM,
 				EXT_CMD_ID_EFUSE_BUFFER_MODE,
@@ -5313,7 +5313,7 @@ wlanoidConnacSetEfusBufferMode(IN struct ADAPTER *prAdapter,
 				u4QueryInfoLen,
 				(uint8_t *) (prCmdSetEfuseBufModeInfo),
 				pvSetBuffer, u4SetBufferLen);
-	printk(KERN_INFO "[wlan-bufbin] wlanSendSetQueryExtCmd returned 0x%x\n", rWlanStatus);
+	/* debug log removed */
 
 	kalMemFree(prCmdSetEfuseBufModeInfo, VIR_MEM_TYPE,
 		   sizeof(struct CMD_EFUSE_BUFFER_MODE_CONNAC_T));

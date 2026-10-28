@@ -438,8 +438,7 @@ void scanSetRequestChannel(IN struct ADAPTER *prAdapter,
 		prScanReqMsg->eScanChannel = SCAN_CHANNEL_SPECIFIED;
 	} else
 #endif /* CFG_SUPPORT_FULL2PARTIAL_SCAN */
-	printk(KERN_ERR "[scan-set-ch] u4ScanChannelNum=%u eScanChannel=%d\n",
-	       u4ScanChannelNum, prScanReqMsg->eScanChannel);
+	/* debug log removed */
 	if (u4ScanChannelNum == 0) {
 		prScanReqMsg->ucChannelListNum = 0;
 	} else {

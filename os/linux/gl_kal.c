@@ -226,10 +226,10 @@ uint32_t kalFirmwareOpen(IN struct GLUE_INFO *prGlueInfo,
 				       prGlueInfo->prDev);
 
 		if (ret) {
-			printk(KERN_ERR "[wlan-fw] request_firmware(%s) failed: %d\n", apucNameTable[ucNameIdx], ret);
+			/* debug log removed */
 			continue;
 		} else {
-			printk(KERN_INFO "[wlan-fw] request_firmware(%s) OK, size=%zu\n", apucNameTable[ucNameIdx], fw_entry->size);
+			/* debug log removed */
 			fgResult = TRUE;
 			break;
 		}

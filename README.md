@@ -41,11 +41,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Step 3: Download & Install the Debian Package (.deb)
 ```bash
-# Download the latest release package (v1.0.3)
-wget https://github.com/<your-username>/mt7663-driver/releases/download/v1.0.3/mt7663-dkms_1.0.3_all.deb
+# Download the latest release package (v1.0.5)
+wget https://github.com/<your-username>/mt7663-driver/releases/download/v1.0.5/mt7663-dkms_1.0.5_all.deb
 
 # Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.3_all.deb
+sudo dpkg -i mt7663-dkms_1.0.5_all.deb
 ```
 
 ### Step 4: Reboot
@@ -68,7 +68,7 @@ This package uses **DKMS (Dynamic Kernel Module Support)** and includes universa
 - **Automatic DKMS Rebuild**:
   Once the new kernel boots, simply run:
   ```bash
-  sudo dpkg -i mt7663-dkms_1.0.3_all.deb
+  sudo dpkg -i mt7663-dkms_1.0.5_all.deb
   ```
   DKMS detects the new kernel version and compiles a dedicated binary module tailored for that exact kernel release.
 
@@ -107,7 +107,7 @@ speedtest
 
 ## ??????? Architecture & Under-the-Hood Fixes
 
-| Component | Root Cause in Stock Driver | Solution in v1.0.3 |
+| Component | Root Cause in Stock Driver | Solution in v1.0.5 |
 | :--- | :--- | :--- |
 | **Amlogic SDIO Burst** | Host `max_req_size = 1536` due to `amlogic,dram-access-quirk`. Driver buffered 4096B, triggering multi-CMD53 splitting and `WASR_TX1_OVER_FLOW`. | Clamped coalescing buffer flush in `kalDevWriteData` (`sdio.c`) to `host->max_req_size` (1536B) and enforced netdev MTU to 1408. |
 | **CPU0 Bottleneck** | ARM GICv2 routes all SPI interrupts to CPU0 by default; MediaTek's internal affinity code relied on proprietary Android kernel APIs (`mt_sched_setaffinity`). | Replaced with standard Linux kernel `set_cpus_allowed_ptr()` in `gl_kal.c` to bind `rx_thread` and `hif_thread` to CPUs 1-3. |

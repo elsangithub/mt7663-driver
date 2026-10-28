@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-10-28
+### Changed
+- **Silent Production Logging**: Completely silenced all development debug messages (`[scan-start]`, `[scan-set-ch]`, `[wlanoidSetAddKey]`, `[wlan-ack]`, `[wlan-cfg]`, and `[wlan-bufbin]`), eliminating red error text and log spam in `dmesg`.
+- **Clean Kernel Dmesg**: Driver is now whisper-quiet and zero-spam in production kernel environments.
+- **Version Leap**: Skipped v1.0.4 directly to v1.0.5 per project release schedule.
+
 ## [1.0.3] - 2026-10-28
 ### Added
 - **Native SMP CPU Affinity**: Thread workers `rx_thread` and `hif_thread` in `os/linux/gl_kal.c` dynamically bind to online CPUs excluding CPU0 (`set_cpus_allowed_ptr`), ensuring packet and SDIO bus processing never contend with system timers or OS scheduler on CPU0.

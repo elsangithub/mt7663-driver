@@ -815,8 +815,7 @@ uint32_t wlanImageSectionConfig(
 
 	if (u4ImgSecSize == 0)
 		return WLAN_STATUS_SUCCESS;
-	printk(KERN_ERR "[wlan-cfg] eDlIdx=%u u4DestAddr=0x%08x u4ImgSecSize=%u u4DataMode=0x%08x\n",
-		eDlIdx, u4DestAddr, u4ImgSecSize, u4DataMode);
+	/* debug log removed */
 	/* 1. Allocate CMD Info Packet and its Buffer. */
 	prCmdInfo = cmdBufAllocateCmdInfo(prAdapter,
 				sizeof(struct INIT_HIF_TX_HEADER) + sizeof(
@@ -1197,26 +1196,18 @@ uint32_t wlanConfigWifiFuncStatus(IN struct ADAPTER
 	while (TRUE) {
 		if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
 		    || fgIsBusAccessFailed == TRUE) {
-			printk(KERN_ERR "[wlan-ack] card removed or bus access failed\n");
+			/* debug log removed */
 			u4Status = WLAN_STATUS_FAILURE;
 			break;
 		} else if (nicRxWaitResponse(prAdapter, ucPortIdx,
 					     aucBuffer, u4EventSize,
 					     &u4RxPktLength) !=
 			   WLAN_STATUS_SUCCESS) {
-			printk(KERN_ERR "[wlan-ack] nicRxWaitResponse timeout/fail\n");
+			/* debug log removed */
 			u4Status = WLAN_STATUS_FAILURE;
 			break;
 		} else {
-			printk(KERN_ERR "[wlan-ack] got resp len=%u: %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x\n",
-				u4RxPktLength,
-				aucBuffer[0], aucBuffer[1], aucBuffer[2], aucBuffer[3],
-				aucBuffer[4], aucBuffer[5], aucBuffer[6], aucBuffer[7],
-				aucBuffer[8], aucBuffer[9], aucBuffer[10], aucBuffer[11],
-				aucBuffer[12], aucBuffer[13], aucBuffer[14], aucBuffer[15],
-				aucBuffer[16], aucBuffer[17], aucBuffer[18], aucBuffer[19],
-				aucBuffer[20], aucBuffer[21], aucBuffer[22], aucBuffer[23],
-				aucBuffer[24], aucBuffer[25], aucBuffer[26], aucBuffer[27]);
+			/* debug log removed */
 #if (MTK_WCN_HIF_SDIO == 0)
 			prInitEvent = (struct INIT_WIFI_EVENT *) aucBuffer;
 #else
@@ -1247,16 +1238,15 @@ uint32_t wlanConfigWifiFuncStatus(IN struct ADAPTER
 #if (MTK_WCN_HIF_SDIO == 0)
 			/* On SDIO ROM mode: Byte 4 is ucStatus (0=success) */
 			if (aucBuffer[4] != 0) {
-				printk(KERN_ERR "[wlan-ack] SDIO status fail: %u\n", aucBuffer[4]);
+				/* debug log removed */
 				u4Status = WLAN_STATUS_FAILURE;
 				break;
 			}
-			printk(KERN_ERR "[wlan-ack] SDIO status SUCCESS! (aucBuffer[4]==0)\n");
+			/* debug log removed */
 			u4Status = WLAN_STATUS_SUCCESS;
 			break;
 #else
-			printk(KERN_ERR "[wlan-ack] parsed ucEID=%u ucSeqNum=%u (expected EID=%u ucCmdSeqNum=%u)\n",
-				prInitEvent->ucEID, prInitEvent->ucSeqNum, INIT_EVENT_ID_CMD_RESULT, ucCmdSeqNum);
+			/* debug log removed */
 			/* EID / SeqNum check */
 			if (prInitEvent->ucEID != INIT_EVENT_ID_CMD_RESULT) {
 				u4Status = WLAN_STATUS_FAILURE;
@@ -1419,13 +1409,12 @@ uint32_t wlanConfigWifiFunc(IN struct ADAPTER *prAdapter,
 		HAL_MCR_RD(prAdapter, MCR_WASR, &u4Wasr);
 		HAL_MCR_RD(prAdapter, MCR_WHISR, &u4Whisr);
 
-		printk(KERN_ERR "[wlan-cfg] FW_START status: D2HRM1R=0x%08x WCIR=0x%08x WASR=0x%08x WHISR=0x%08x\n",
-		       u4D2h, u4Wcir, u4Wasr, u4Whisr);
+		/* debug log removed */
 
 		HAL_WIFI_FUNC_READY_CHECK(prAdapter,
 					  prChipInfo->sw_ready_bits,
 					  &fgReady);
-		printk(KERN_INFO "[wlan-cfg] FW_START delivered on SDIO, passing to Step <9> readiness check\n");
+		/* debug log removed */
 		u4Status = WLAN_STATUS_SUCCESS;
 	}
 #endif
@@ -1891,8 +1880,7 @@ uint32_t wlanConnacFormatDownload(IN struct ADAPTER
 	rCfgStatus = wlanConfigWifiFunc(prAdapter,
 					(ram_entry == 0) ? FALSE : TRUE,
 					ram_entry, ucPDA);
-	printk(KERN_ERR "[wlan-fw] DL stage: rDlStatus=0x%x rCfgStatus=0x%x ram_entry=0x%x ucPDA=%u\n",
-		rDlStatus, rCfgStatus, ram_entry, ucPDA);
+	/* debug log removed */
 
 	kalFirmwareImageUnmapping(prAdapter->prGlueInfo, NULL,
 				  prFwBuffer);

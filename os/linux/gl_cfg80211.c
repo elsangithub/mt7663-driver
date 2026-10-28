@@ -939,8 +939,7 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 		return -EINVAL;
 	}
 
-	printk(KERN_ERR "[scan-start] req=%p n_channels=%d caller=%pS\n",
-	       request, request ? request->n_channels : 0, __builtin_return_address(0));
+	/* debug log removed */
 	DBGLOG(REQ, TRACE, "mtk_cfg80211_scan\n");
 #if (CFG_SUPPORT_QA_TOOL == 1) || (CFG_SUPPORT_LOWLATENCY_MODE == 1)
 	prAdapter = prGlueInfo->prAdapter;

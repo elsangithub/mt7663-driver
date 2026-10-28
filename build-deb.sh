@@ -2,7 +2,7 @@
 set -e
 
 PACKAGE=mt7663-dkms
-VERSION=1.0.3
+VERSION=1.0.5
 BUILD_DIR=/tmp/${PACKAGE}_build
 SRC_DIR=${BUILD_DIR}/usr/src/mt7663-${VERSION}
 
