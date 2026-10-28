@@ -2,7 +2,7 @@
 set -e
 
 PACKAGE=mt7663-dkms
-VERSION=1.0.0
+VERSION=1.0.2
 BUILD_DIR=/tmp/${PACKAGE}_build
 SRC_DIR=${BUILD_DIR}/usr/src/mt7663-${VERSION}
 
@@ -26,10 +26,11 @@ cp system/etc/systemd/system/* ${BUILD_DIR}/etc/systemd/system/
 cp system/etc/udev/rules.d/* ${BUILD_DIR}/etc/udev/rules.d/
 cp system/etc/sysctl.d/* ${BUILD_DIR}/etc/sysctl.d/
 cp system/lib/firmware/* ${BUILD_DIR}/lib/firmware/
+chmod 644 ${BUILD_DIR}/lib/firmware/*
 
 cat << 'CTRL' > ${BUILD_DIR}/DEBIAN/control
 Package: mt7663-dkms
-Version: 1.0.0
+Version: 1.0.2
 Architecture: all
 Maintainer: Van der Decken <root@hermes>
 Depends: dkms, build-essential
@@ -44,11 +45,11 @@ cat << 'POST' > ${BUILD_DIR}/DEBIAN/postinst
 #!/bin/sh
 set -e
 
-echo "Registering mt7663 (1.0.0) with DKMS..."
-dkms remove -m mt7663 -v 1.0.0 --all 2>/dev/null || true
-dkms add -m mt7663 -v 1.0.0 || true
-dkms build -m mt7663 -v 1.0.0 || true
-dkms install -m mt7663 -v 1.0.0 || true
+echo "Registering mt7663 (1.0.2) with DKMS..."
+dkms remove -m mt7663 -v 1.0.2 --all 2>/dev/null || true
+dkms add -m mt7663 -v 1.0.2 || true
+dkms build -m mt7663 -v 1.0.2 || true
+dkms install -m mt7663 -v 1.0.2 || true
 
 echo "Configuring automatic kernel module loading..."
 echo wlan_mt7663_sdio > /etc/modules-load.d/wlan_mt7663_sdio.conf
@@ -74,10 +75,10 @@ cat << 'PRE' > ${BUILD_DIR}/DEBIAN/prerm
 #!/bin/sh
 set -e
 
-echo "Removing mt7663 (1.0.0) from DKMS..."
+echo "Removing mt7663 (1.0.2) from DKMS..."
 ip link set wlan0 down 2>/dev/null || true
 modprobe -r wlan_mt7663_sdio 2>/dev/null || true
-dkms remove -m mt7663 -v 1.0.0 --all 2>/dev/null || true
+dkms remove -m mt7663 -v 1.0.2 --all 2>/dev/null || true
 rm -f /etc/modules-load.d/wlan_mt7663_sdio.conf
 
 if [ -d /run/systemd/system ]; then
