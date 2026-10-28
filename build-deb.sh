@@ -64,13 +64,25 @@ cat << POST > ${BUILD_DIR}/DEBIAN/postinst
 #!/bin/sh
 set -e
 
+# Detect existing registrations dynamically
+OLD_VERSIONS=\$(dkms status -m mt7663 2>/dev/null | awk -F'[/,]' '{print \$2}' | sort -u)
+
+if [ -n "\$OLD_VERSIONS" ]; then
+    for VER in \$OLD_VERSIONS; do
+        if [ "\$VER" != "${VERSION}" ]; then
+            echo "Terdeteksi driver mt7663 versi lama (\$VER), mencopot versi lama..."
+            dkms remove -m mt7663 -v "\$VER" --all 2>/dev/null || true
+        fi
+    done
+else
+    echo "Instalasi bersih terdeteksi (belum ada versi lama di sistem)."
+fi
+
 echo "Registering mt7663 (${VERSION}) with DKMS..."
-dkms remove -m mt7663 -v 1.0.2 --all 2.>/dev/null || true
-dkms remove -m mt7663 -v 1.0.3 --all 2>/dev/null || true
 dkms remove -m mt7663 -v ${VERSION} --all 2>/dev/null || true
-dkms add -m mt7663 -v ${VERSION} || true
-dkms build -m mt7663 -v ${VERSION} || true
-dkms install -m mt7663 -v ${VERSION} || true
+dkms add -m mt7663 -v ${VERSION}
+dkms build -m mt7663 -v ${VERSION}
+dkms install -m mt7663 -v ${VERSION}
 
 echo "Configuring automatic kernel module loading..."
 echo wlan_mt7663_sdio > /etc/modules-load.d/wlan_mt7663_sdio.conf
