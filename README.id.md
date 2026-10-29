@@ -47,9 +47,10 @@ cat /sys/bus/sdio/devices/*/device 2>/dev/null || cat /sys/bus/sdio/devices/*/ve
 ```
 Jika terminal menampilkan vendor `0x037a` dan device `0x7663` atau `0x7603`, maka unit Anda menggunakan modul **AMPAK MT7661RSN (MT7663)** dan memerlukan driver ini.
 
-> [!CAUTION]
-> **Kernel Lawas 5.x (5.10 / 5.15) TIDAK didukung pada FiberHome HG680-FJ!**
-> Device Tree HG680-FJ (`meson-g12a-hg680-fj.dtb`) memerlukan driver `amlogic,meson-g12-pwm-v2` untuk menyuplai *reference clock* SDIO 32.768 KHz. Driver clock ini hanya tersedia di kernel Linux 6.x+. Pada Kernel 5.x, daya dan clock SDIO tetap mati sehingga modul Wi-Fi tidak dapat dideteksi oleh hardware.
+> [!NOTE]
+> **Dukungan Kernel: Linux 6.x & Linux 5.10 (dengan Patch DTB Universal)**
+> - **Linux 6.x+ (Direkomendasikan, contoh: 6.6 / 6.12 / 6.18)**: Didukung langsung secara *out-of-the-box* dengan DTB bawaan Ophub.
+> - **Linux 5.10 LTS (contoh: 5.10.272-ophub)**: Didukung penuh! Pada DTB bawaan Ophub, *reference clock* 32.768 KHz belum memiliki binding `amlogic,meson-g12a-ee-pwm`. Cukup pasang patch DTB universal kami ([`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb)), dan Wi-Fi akan langsung terdeteksi serta bekerja mulus di Kernel 5.10!
 
 ---
 

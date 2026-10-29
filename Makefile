@@ -30,12 +30,12 @@ $(info MODULE_NAME=====$(MODULE_NAME))
 ifneq ($(KERNELRELEASE),)
     KERNEL_MAJOR := $(shell echo $(KERNELRELEASE) | cut -d. -f1)
     ifeq ($(shell [ "$(KERNEL_MAJOR)" -lt 6 ] && echo y),y)
-        $(warning ========================================================================)
-        $(warning [MT7663] WARNING: Compiling for Linux $(KERNELRELEASE) (< 6.0))
-        $(warning FiberHome HG680-FJ requires Kernel 6.x+ (e.g. 6.12 / 6.18) due to)
-        $(warning Device Tree dependency on meson-g12-pwm-v2 for SDIO clock supply.)
-        $(warning Wi-Fi will NOT be detected on Kernel 5.x on this board!)
-        $(warning =======================================================================)
+        $(info ========================================================================)
+        $(info [MT7663] NOTE: Compiling for Linux $(KERNELRELEASE) (< 6.0))
+        $(info On FiberHome HG680-FJ with Linux 5.x, ensure you use the universal)
+        $(info DTB from dtbfix/ to enable the SDIO 32kHz clock supply.)
+        $(info Universal DTB supports both Linux 5.10 and 6.x seamlessly.)
+        $(info ========================================================================)
     endif
 endif
 export CONFIG_MTK_PREALLOC_MEMORY=n

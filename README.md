@@ -47,9 +47,10 @@ cat /sys/bus/sdio/devices/*/device 2>/dev/null || cat /sys/bus/sdio/devices/*/ve
 ```
 If the output shows vendor `0x037a` and device `0x7663` or `0x7603`, your board is equipped with the **AMPAK MT7661RSN (MT7663)** module and requires this driver.
 
-> [!CAUTION]
-> **Legacy Kernel 5.x (5.10 / 5.15) is NOT supported on FiberHome HG680-FJ!**
-> The HG680-FJ Device Tree (`meson-g12a-hg680-fj.dtb`) requires `amlogic,meson-g12-pwm-v2` to supply the 32.768 KHz SDIO reference clock. This driver is only present in Linux 6.x+ kernels. On Kernel 5.x, SDIO hardware power and clock remain uninitialized, preventing Wi-Fi hardware detection.
+> [!NOTE]
+> **Kernel Support: Linux 6.x & Linux 5.10 (with Universal DTB Patch)**
+> - **Linux 6.x+ (Recommended, e.g. 6.6 / 6.12 / 6.18)**: Supported out-of-the-box with the stock Ophub DTB.
+> - **Linux 5.10 LTS (e.g. 5.10.272-ophub)**: Fully supported! In the stock Ophub DTB, the 32.768 KHz reference clock is missing the `amlogic,meson-g12a-ee-pwm` compatible binding. Simply apply our universal DTB fix ([`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb)), and Wi-Fi works seamlessly on Kernel 5.10!
 
 ---
 
