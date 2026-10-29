@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.6] - 2026-10-29
 ### Added
-- **RF Power Calibration Firmware (`TxPwrLimit_MT76x3.dat` & `TxPwrLimit_MT76x8.dat`)**: Bundled regulatory transmit power calibration tables directly into `/lib/firmware/`, ensuring optimal linear Power Amplifier (PA) operation for 256-QAM (MCS 8/9) without saturation, distortion, or missing firmware errors in `dmesg`.
+- **RF Power Calibration Firmware (`TxPwrLimit_MT76x3.dat`)**: Bundled regulatory transmit power calibration tables directly into `/lib/firmware/`, ensuring optimal linear Power Amplifier (PA) operation for 256-QAM (MCS 8/9) without saturation, distortion, or missing firmware errors in `dmesg`.
 - **Automatic Boot Module Loading (`/etc/modules-load.d/wlan_mt7663_sdio.conf`)**: Integrated automatic module configuration into the `.deb` package to ensure `wlan_mt7663_sdio` starts seamlessly on clean OS burns without requiring manual configuration.
 - **Self-Healing Toolchain Alignment**: Integrated runtime detection and instant GCC rebuilding of kernel header host tools (`modpost`) in `postinst` to automatically resolve GLIBC mismatches (e.g. Debian 12 Bookworm GLIBC 2.36 vs Ophub GLIBC 2.38+) without triggering Kbuild `syncconfig` or deleting `autoconf.h`.
 
