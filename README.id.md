@@ -33,11 +33,11 @@ Perangkat STB **FiberHome HG680-FJ** (Amlogic S905X2 / G12A) di pasaran beredar 
 
 | Varian Hardware | Modul Fisik | Core Chipset Internal | Driver Linux yang Digunakan |
 | :--- | :--- | :--- | :--- |
-| **Varian A** | MediaTek MT7668 | MediaTek MT7668 | Driver bawaan (*in-tree*) kernel Linux (`mt7668u` / `mt7668`) |
+| **Varian A** | MediaTek MT7668 | MediaTek MT7668 | Driver terpisah untuk MT7668 (contoh: [junglon/mt7668-driver](https://github.com/junglon/mt7668-driver)) |
 | **Varian B** | AMPAK MT7661RSN | **MediaTek MT7663** (`037A:7663`) | **Driver DKMS ini (`mt7663-dkms`)** |
 
-- **Unit MT7668**: Sudah didukung langsung (*out-of-the-box*) oleh kernel Linux modern standar.
-- **Unit AMPAK MT7661RSN (MT7663)**: **Tidak didukung** oleh driver bawaan kernel Linux standar (interface Wi-Fi tidak muncul atau hardware gagal diinisialisasi). Repositori ini dibuat secara khusus agar unit dengan modul AMPAK MT7661RSN / MT7663 dapat menggunakan konektivitas Dual-Band (2.4 GHz & 5 GHz) secara stabil, kencang, dan bebas dari *system freeze/hang*.
+- **Unit MT7668**: Membutuhkan solusi driver terpisah khusus chipset MT7668 (seperti driver komunitas oleh junglon). Paket ini tidak ditujukan untuk modul MT7668.
+- **Unit AMPAK MT7661RSN (MT7663)**: Membutuhkan paket DKMS ini (`mt7663-dkms`) agar hardware SDIO dapat diinisialisasi dan menyediakan konektivitas Dual-Band (2.4 GHz & 5 GHz) secara penuh.
 - **Koeksistensi Bersih**: Driver ini menggunakan file konfigurasi firmware terisolasi (`/lib/firmware/wifi_mt7661.cfg`), sehingga jika Anda menggunakan satu image sistem yang sama untuk unit MT7668 dan MT7663, konfigurasi keduanya tidak akan saling bentrok.
 
 ### Cara Memeriksa Varian Chipset di STB Anda:
@@ -101,12 +101,17 @@ sudo reboot
 
 ## 📶 Menghubungkan & Memverifikasi Wi-Fi
 
-### Hubungkan ke Jaringan Wi-Fi via Terminal:
+### Langkah 1: Pindai Jaringan Wi-Fi yang Tersedia:
+```bash
+nmcli device wifi list
+```
+
+### Langkah 2: Hubungkan ke Jaringan Wi-Fi via Terminal:
 ```bash
 sudo nmcli dev wifi connect "NAMA_SSID_ANDA" password "PASSWORD_WIFI"
 ```
 
-### Periksa Status Koneksi & Kecepatan Link Fisik:
+### Langkah 3: Periksa Status Koneksi & Kecepatan Link Fisik:
 ```bash
 iw dev wlan0 link
 ```

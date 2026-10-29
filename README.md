@@ -33,11 +33,11 @@ The **FiberHome HG680-FJ** (Amlogic S905X2 / G12A) TV box was shipped by the fac
 
 | Hardware Variant | Physical Module | Internal Core Chipset | Required Linux Driver |
 | :--- | :--- | :--- | :--- |
-| **Variant A** | MediaTek MT7668 | MediaTek MT7668 | Built-in in-tree Linux kernel driver (`mt7668u` / `mt7668`) |
+| **Variant A** | MediaTek MT7668 | MediaTek MT7668 | Separate MT7668 driver (e.g. [junglon/mt7668-driver](https://github.com/junglon/mt7668-driver)) |
 | **Variant B** | AMPAK MT7661RSN | **MediaTek MT7663** (`037A:7663`) | **This DKMS Driver Package (`mt7663-dkms`)** |
 
-- **MT7668 Units**: Supported out-of-the-box by standard modern Linux kernels.
-- **AMPAK MT7661RSN (MT7663) Units**: **Not supported** by standard in-tree kernel drivers (no Wi-Fi interface appears or hardware fails to initialize). This repository was created specifically to enable full, stable, high-performance Dual-Band (2.4 GHz & 5 GHz) connectivity on these units.
+- **MT7668 Units**: Handled by separate driver projects dedicated to the MT7668 module (such as the community driver by junglon). This package does not target MT7668.
+- **AMPAK MT7661RSN (MT7663) Units**: Requires this out-of-tree DKMS package (`mt7663-dkms`) to initialize the SDIO hardware and provide full Dual-Band (2.4 GHz & 5 GHz) operation.
 - **Safe Coexistence**: This driver uses an isolated firmware configuration file (`/lib/firmware/wifi_mt7661.cfg`), ensuring that shared disk images between MT7668 and MT7663 units will not conflict.
 
 ### How to Check Your Unit's Chipset Variant:
@@ -100,12 +100,17 @@ sudo reboot
 
 ## 📶 Connecting & Verifying Wi-Fi
 
-### Connect to Wi-Fi via Terminal:
+### Step 1: Scan for Available Wi-Fi Networks:
+```bash
+nmcli device wifi list
+```
+
+### Step 2: Connect to Wi-Fi via Terminal:
 ```bash
 sudo nmcli dev wifi connect "YOUR_SSID" password "YOUR_PASSWORD"
 ```
 
-### Verify Connection & Physical Link Rate:
+### Step 3: Verify Connection & Physical Link Rate:
 ```bash
 iw dev wlan0 link
 ```
