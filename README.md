@@ -107,7 +107,11 @@ nmcli device wifi list
 
 ### Step 2: Connect to Wi-Fi via Terminal:
 ```bash
+# Connect to your Wi-Fi SSID
 sudo nmcli dev wifi connect "YOUR_SSID" password "YOUR_PASSWORD"
+
+# Flush disk cache to ensure NetworkManager profile is permanently saved to storage
+sync
 ```
 
 ### Step 3: Verify Connection & Physical Link Rate:
