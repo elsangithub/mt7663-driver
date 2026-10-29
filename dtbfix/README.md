@@ -1,20 +1,22 @@
-﻿# FiberHome HG680-FJ Device Tree (DTB) Collection
+﻿[English](README.md) | [Bahasa Indonesia](README.id.md)
 
-Direktori ini berisi 3 varian file Device Tree Blob (`.dtb`) untuk FiberHome HG680-FJ (Amlogic S905X2 / G12A) di Armbian Ophub:
+# FiberHome HG680-FJ Device Tree (DTB) Collection
+
+This directory contains 3 Device Tree Blob (`.dtb`) variants for FiberHome HG680-FJ (Amlogic S905X2 / G12A) running Armbian Ophub:
 
 ---
 
-## ???? Perbandingan 3 Varian DTB / Comparison Table
+## ???? DTB Variant Comparison Table
 
-| File | Target Kernel | MicroSD Clock | Card Detect | SDIO Wi-Fi 32kHz Clock | Status & Rekomendasi |
+| File | Target Kernel | MicroSD Clock | Card Detect | SDIO Wi-Fi 32kHz Clock | Notes & Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`meson-g12a-hg680-fj-ori.dtb`** | Linux 6.x | 104 MHz (SDR104) | GPIO (`cd-gpios`) | `amlogic,meson-g12-pwm-v2` | Asli bawaan pabrik Ophub. Rentan freeze/corrupt pada kartu MicroSD tertentu. |
-| **`meson-g12a-hg680-fj-fixed.dtb`** | Linux 6.x | 50 MHz | `non-removable` | `amlogic,meson-g12-pwm-v2` | Patch stabilitas MicroSD. Sangat stabil untuk booting dari kartu TF pada Kernel 6.x. |
-| **`meson-g12a-hg680-fj-uni.dtb`** | **Linux 5.10 & 6.x** | 50 MHz | `non-removable` | **Universal** (`meson-g12a-ee-pwm` + `meson-g12-pwm-v2`) | **Sangat direkomendasikan!** Stabil untuk MicroSD dan mendukung Wi-Fi di Kernel 5.10 LTS maupun Kernel 6.x. |
+| **`meson-g12a-hg680-fj-ori.dtb`** | Linux 6.x | 104 MHz (SDR104) | GPIO (`cd-gpios`) | `amlogic,meson-g12-pwm-v2` | Stock Ophub DTB. Prone to detection failure on certain MicroSD cards. |
+| **`meson-g12a-hg680-fj-fixed.dtb`** | Linux 6.x | 50 MHz | `non-removable` | `amlogic,meson-g12-pwm-v2` | MicroSD stability patch. Highly stable for TF card booting on Kernel 6.x. |
+| **`meson-g12a-hg680-fj-uni.dtb`** | **Linux 5.10 & 6.x** | 50 MHz | `non-removable` | **Universal** (`meson-g12a-ee-pwm` + `meson-g12-pwm-v2`) | **Highly recommended!** Stable MicroSD timing and enables Wi-Fi on both Kernel 5.10 LTS and Kernel 6.x. |
 
 ---
 
-## ???? Checksum SHA256
+## ???? SHA256 Checksums
 
 ```text
 8a55a85bc3676fc350cc09418d4945e516f53a172a6130a9339d556a71e8ec4a  meson-g12a-hg680-fj-ori.dtb
@@ -24,17 +26,17 @@ a9796296036147ea10733c14406c3701f029de3d9bd0ebbe4a4eefee2e796b3b  meson-g12a-hg6
 
 ---
 
-## ???? Cara Pemasangan / How to Apply
+## ???? How to Apply
 
-Pilih salah satu file DTB yang Anda inginkan, lalu salin ke `/boot/dtb/amlogic/`:
+Choose your desired DTB variant and copy it to your boot directory:
 
 ```bash
-# Contoh menggunakan DTB Universal (direkomendasikan):
+# Example using Universal DTB (recommended):
 sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
 
-# Edit konfigurasi boot uEnv.txt:
+# Edit your boot environment file:
 sudo nano /boot/uEnv.txt
-# Ubah baris FDT menjadi:
+# Update the FDT line:
 # FDT=/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb
 
 sudo reboot

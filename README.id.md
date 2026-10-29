@@ -50,7 +50,7 @@ Jika terminal menampilkan vendor `0x037a` dan device `0x7663` atau `0x7603`, mak
 > [!NOTE]
 > **Dukungan Kernel: Linux 6.x & Linux 5.10 (dengan Patch DTB Universal)**
 > - **Linux 6.x+ (Direkomendasikan, contoh: 6.6 / 6.12 / 6.18)**: Didukung langsung secara *out-of-the-box* dengan DTB bawaan Ophub.
-> - **Linux 5.10 LTS (contoh: 5.10.272-ophub)**: Didukung penuh! Pada DTB bawaan Ophub, *reference clock* 32.768 KHz belum memiliki binding `amlogic,meson-g12a-ee-pwm`. Cukup pasang patch DTB universal kami ([`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb)), dan Wi-Fi akan langsung terdeteksi serta bekerja mulus di Kernel 5.10!
+> - **Linux 5.10 LTS (contoh: 5.10.272-ophub)**: Didukung penuh! Pada DTB bawaan Ophub, *reference clock* 32.768 KHz belum memiliki binding `amlogic,meson-g12a-ee-pwm`. Cukup pasang patch DTB universal kami ([`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb)), dan Wi-Fi akan langsung terdeteksi serta bekerja mulus di Kernel 5.10!
 
 ---
 
@@ -176,13 +176,13 @@ sudo apt purge -y mt7663-dkms
 4. **Ketidakcocokan Voltase I/O**:
    DTB bawaan mengarahkan jalur sinyal `vqmmc-supply` ke 1.8V (`VDDAO_1V8`), padahal slot fisik HG680-FJ terkunci permanen pada 3.3V.
 
-### Apa yang Diubah oleh `dtbfix/meson-g12a-hg680-fj-fixed.dtb`?
+### Apa yang Diubah oleh `dtbfix/meson-g12a-hg680-fj-uni.dtb`?
 - Menghapus saklar mekanis `cd-gpios` dan menggantinya dengan flag `non-removable;` (mengunci MicroSD sebagai media permanen anti-lepas seperti halnya eMMC internal; 100% kebal terhadap noise listrik dan *voltage sag* Wi-Fi).
 - Mengunci `max-frequency` pada frekuensi stabil **50 MHz** (`0x2faf080` / standar High-Speed).
 - Mengunci `vqmmc-supply` pada tegangan 3.3V (`VDDAO_3V3`).
 
 ### Cara Memasang DTB Fixed Ini:
-File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb). Anda dapat memilih salah satu dari dua metode berikut:
+File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb). Anda dapat memilih salah satu dari dua metode berikut:
 
 #### Metode A: Backup & Timpa Langsung (Direkomendasikan - Tanpa Perlu Edit File Boot)
 Backup file DTB asli Anda, lalu timpa langsung dengan file yang sudah diperbaiki:
@@ -191,7 +191,7 @@ Backup file DTB asli Anda, lalu timpa langsung dengan file yang sudah diperbaiki
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
 # 2. Timpa dengan file DTB fixed
-sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
 
 # 3. Reboot STB
 sudo reboot
@@ -201,14 +201,14 @@ sudo reboot
 Salin file DTB fixed dengan nama aslinya, lalu arahkan konfigurasi boot ke file tersebut:
 ```bash
 # 1. Salin file DTB fixed ke direktori boot
-sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
+sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
 
 # 2. Buka file konfigurasi boot
 sudo nano /boot/uEnv.txt
 ```
 Arahkan baris `FDT=` ke nama file DTB fixed:
 ```ini
-FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
+FDT=/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb
 ```
 Simpan dan keluar (`Ctrl + O`, `Enter`, `Ctrl + X`), kemudian restart STB:
 ```bash

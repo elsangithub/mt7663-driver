@@ -50,7 +50,7 @@ If the output shows vendor `0x037a` and device `0x7663` or `0x7603`, your board 
 > [!NOTE]
 > **Kernel Support: Linux 6.x & Linux 5.10 (with Universal DTB Patch)**
 > - **Linux 6.x+ (Recommended, e.g. 6.6 / 6.12 / 6.18)**: Supported out-of-the-box with the stock Ophub DTB.
-> - **Linux 5.10 LTS (e.g. 5.10.272-ophub)**: Fully supported! In the stock Ophub DTB, the 32.768 KHz reference clock is missing the `amlogic,meson-g12a-ee-pwm` compatible binding. Simply apply our universal DTB fix ([`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb)), and Wi-Fi works seamlessly on Kernel 5.10!
+> - **Linux 5.10 LTS (e.g. 5.10.272-ophub)**: Fully supported! In the stock Ophub DTB, the 32.768 KHz reference clock is missing the `amlogic,meson-g12a-ee-pwm` compatible binding. Simply apply our universal DTB fix ([`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb)), and Wi-Fi works seamlessly on Kernel 5.10!
 
 ---
 
@@ -175,13 +175,13 @@ sudo apt purge -y mt7663-dkms
 4. **I/O Voltage Mismatch**:
    Stock DTB points `vqmmc-supply` to 1.8V (`VDDAO_1V8`), whereas the physical HG680-FJ MicroSD slot is hardwired to 3.3V.
 
-### What Does `dtbfix/meson-g12a-hg680-fj-fixed.dtb` Change?
+### What Does `dtbfix/meson-g12a-hg680-fj-uni.dtb` Change?
 - Replaces mechanical `cd-gpios` with `non-removable;` (locking the card permanently in software like internal eMMC; completely immune to voltage noise and Wi-Fi transmission sag).
 - Caps `max-frequency` to a rock-solid **50 MHz** (`0x2faf080` / standard High-Speed).
 - Locks `vqmmc-supply` to 3.3V (`VDDAO_3V3`).
 
 ### How to Apply the Fixed DTB:
-The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb). You can use either of the two methods below:
+The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb). You can use either of the two methods below:
 
 #### Method A: Backup & Replace Directly (Recommended - No File Editing Required)
 Backup your original DTB and overwrite it with the fixed version:
@@ -190,7 +190,7 @@ Backup your original DTB and overwrite it with the fixed version:
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
 # 2. Overwrite with the fixed DTB
-sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
 
 # 3. Reboot the device
 sudo reboot
@@ -200,14 +200,14 @@ sudo reboot
 Copy the fixed DTB with its own name and update your boot configuration:
 ```bash
 # 1. Copy the fixed DTB to your boot directory
-sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
+sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
 
 # 2. Edit your boot environment file
 sudo nano /boot/uEnv.txt
 ```
 Update the `FDT=` line to point to the fixed DTB:
 ```ini
-FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
+FDT=/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb
 ```
 Save and exit (`Ctrl + O`, `Enter`, `Ctrl + X`), then reboot:
 ```bash
