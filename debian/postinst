@@ -1,0 +1,58 @@
+#!/bin/sh
+set -e
+
+VERSION="1.0.6"
+
+# Detect existing registrations dynamically
+OLD_VERSIONS=$(dkms status -m mt7663 2>/dev/null | awk -F'[/,]' '{print $2}' | sort -u)
+
+if [ -n "$OLD_VERSIONS" ]; then
+    for VER in $OLD_VERSIONS; do
+        if [ "$VER" != "$VERSION" ]; then
+            echo "Terdeteksi driver mt7663 versi lama ($VER), mencopot versi lama..."
+            dkms remove -m mt7663 -v "$VER" --all 2>/dev/null || true
+        fi
+    done
+else
+    echo "Instalasi bersih terdeteksi (belum ada versi lama di sistem)."
+fi
+
+echo "Registering mt7663 ($VERSION) with DKMS..."
+dkms remove -m mt7663 -v $VERSION --all 2>/dev/null || true
+dkms add -m mt7663 -v $VERSION
+
+# Check if kernel header host tools (modpost) match system glibc, self-heal directly if needed
+KERNEL_BUILD_DIR="/lib/modules/$(uname -r)/build"
+MODPOST_BIN="${KERNEL_BUILD_DIR}/scripts/mod/modpost"
+if [ -d "$KERNEL_BUILD_DIR" ]; then
+    if [ -f "$MODPOST_BIN" ] && ! "$MODPOST_BIN" -h >/dev/null 2>&1; then
+        echo "Menyelaraskan toolchain header kernel (rebuilding modpost untuk glibc lokal)..."
+        gcc -O2 -std=gnu11 -I "${KERNEL_BUILD_DIR}/scripts/include" -o "$MODPOST_BIN"             "${KERNEL_BUILD_DIR}/scripts/mod/modpost.c"             "${KERNEL_BUILD_DIR}/scripts/mod/file2alias.c"             "${KERNEL_BUILD_DIR}/scripts/mod/sumversion.c"             "${KERNEL_BUILD_DIR}/scripts/mod/symsearch.c" >/dev/null 2>&1 || true
+    fi
+fi
+
+dkms build -m mt7663 -v $VERSION
+dkms install -m mt7663 -v $VERSION
+
+echo "Configuring automatic kernel module loading..."
+echo wlan_mt7663_sdio > /etc/modules-load.d/wlan_mt7663_sdio.conf
+depmod -a
+modprobe wlan_mt7663_sdio 2>/dev/null || true
+
+# Apply sysctl and udev performance rules
+sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
+udevadm control --reload-rules 2>/dev/null || true
+udevadm trigger 2>/dev/null || true
+/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
+ip link set wlan0 up 2>/dev/null || true
+systemctl restart wpa_supplicant 2>/dev/null || true
+systemctl restart NetworkManager 2>/dev/null || true
+
+# Clean up old external service if present
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload 2>/dev/null || true
+    systemctl stop wlan-tune.service 2>/dev/null || true
+    systemctl disable wlan-tune.service 2>/dev/null || true
+    rm -f /etc/systemd/system/wlan-tune.service 2>/dev/null || true
+    systemctl enable mt7663-shutdown.service 2>/dev/null || true
+fi

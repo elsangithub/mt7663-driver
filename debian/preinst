@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+
+KERNEL_MAJOR=$(uname -r | cut -d. -f1)
+if [ "$KERNEL_MAJOR" -lt 6 ] 2>/dev/null; then
+    echo "======================================================================="
+    echo "  [PERINGATAN] Kernel $(uname -r) TIDAK DIDUKUNG di FiberHome HG680-FJ!"
+    echo "  Device Tree HG680-FJ membutuhkan driver 'meson-g12-pwm-v2' yang"
+    echo "  hanya tersedia pada Kernel Linux 6.x ke atas (rekomendasi: 6.12 / 6.18+)."
+    echo "  Pada Kernel 5.x, clock SDIO tidak aktif sehingga Wi-Fi tidak terdeteksi."
+    echo "  Silakan gunakan kernel 6.x: armbian-update -k 6.12"
+    echo "======================================================================="
+fi
+
+# Cek ketersediaan header kernel untuk proses kompilasi DKMS
+if [ ! -d "/lib/modules/$(uname -r)/build" ] && [ ! -d "/usr/src/linux-headers-$(uname -r)" ]; then
+    echo "======================================================================="
+    echo "  [PERINGATAN] Header kernel ($(uname -r)) tidak ditemukan!"
+    echo "  DKMS membutuhkan header kernel untuk mengompilasi driver."
+    echo "  Silakan pasang header kernel terlebih dahulu:"
+    echo "    apt-get install -y linux-headers-$(uname -r)  ATAU  armbian-config"
+    echo "======================================================================="
+fi
+
+exit 0

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-10-29
+### Added
+- **RF Power Calibration Firmware (`TxPwrLimit_MT76x3.dat` & `TxPwrLimit_MT76x8.dat`)**: Bundled regulatory transmit power calibration tables directly into `/lib/firmware/`, ensuring optimal linear Power Amplifier (PA) operation for 256-QAM (MCS 8/9) without saturation, distortion, or missing firmware errors in `dmesg`.
+- **Automatic Boot Module Loading (`/etc/modules-load.d/wlan_mt7663_sdio.conf`)**: Integrated automatic module configuration into the `.deb` package to ensure `wlan_mt7663_sdio` starts seamlessly on clean OS burns without requiring manual configuration.
+- **Self-Healing Toolchain Alignment**: Integrated runtime detection and instant GCC rebuilding of kernel header host tools (`modpost`) in `postinst` to automatically resolve GLIBC mismatches (e.g. Debian 12 Bookworm GLIBC 2.36 vs Ophub GLIBC 2.38+) without triggering Kbuild `syncconfig` or deleting `autoconf.h`.
+
+### Changed
+- **Comprehensive In-Tree Driver Neutralization**: Enhanced `/etc/modprobe.d/blacklist-mt7663-bluetooth.conf` with `install <module> /bin/true` overrides for all conflicting in-tree drivers (`mt7663s`, `mt76_sdio`, `mt7663_usb_sdio_common`, `mt7615_common`, `mt76_connac_lib`, `mt76`, `btmtksdio`, `btmtk`), completely preventing udev alias race conditions and device lockups on boot across Linux 6.12 and 6.18+.
+- **Unified Packaging Architecture**: Centralized all runtime files and scripts exclusively inside `/root/mt7663-driver` with zero external dependencies.
+
 ## [1.0.5] - 2026-10-28
 ### Added
 - **Linux 6.18+ Modern Kernel Support**: Added backward/forward compatibility bridge for Linux 6.18+ timer subsystem modernization (`timer_delete_sync()`, `timer_delete()`, and `container_of` from_timer mapping) alongside `FB_EVENT_BLANK` fallback, while maintaining 100% native compatibility with Linux 6.12 LTS.

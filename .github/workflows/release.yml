@@ -1,0 +1,30 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build .deb and Publish Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Debian Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Building version: ${VERSION}"
+          chmod +x build-deb.sh
+          ./build-deb.sh "${VERSION}"
+
+      - name: Publish Release to GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mt7663-dkms_*_all.deb
+          generate_release_notes: true
