@@ -174,16 +174,31 @@ sudo apt purge -y mt7663-dkms
 - Locks `vqmmc-supply` to 3.3V (`VDDAO_3V3`).
 
 ### How to Apply the Fixed DTB:
-The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb):
+The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb). You can use either of the two methods below:
 
+#### Method A: Backup & Replace Directly (Recommended - No File Editing Required)
+Backup your original DTB and overwrite it with the fixed version:
 ```bash
-# 1. Copy the fixed DTB to your active Armbian dtb directory
+# 1. Backup the original DTB
+sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
+
+# 2. Overwrite with the fixed DTB
+sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+
+# 3. Reboot the device
+sudo reboot
+```
+
+#### Method B: Custom DTB via `uEnv.txt`
+Copy the fixed DTB with its own name and update your boot configuration:
+```bash
+# 1. Copy the fixed DTB to your boot directory
 sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
 
 # 2. Edit your boot environment file
 sudo nano /boot/uEnv.txt
 ```
-Locate the `FDT=` line and update it to point to the fixed DTB:
+Update the `FDT=` line to point to the fixed DTB:
 ```ini
 FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
 ```

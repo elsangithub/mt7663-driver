@@ -175,16 +175,31 @@ sudo apt purge -y mt7663-dkms
 - Mengunci `vqmmc-supply` pada tegangan 3.3V (`VDDAO_3V3`).
 
 ### Cara Memasang DTB Fixed Ini:
-File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb):
+File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb). Anda dapat memilih salah satu dari dua metode berikut:
 
+#### Metode A: Backup & Timpa Langsung (Direkomendasikan - Tanpa Perlu Edit File Boot)
+Backup file DTB asli Anda, lalu timpa langsung dengan file yang sudah diperbaiki:
 ```bash
-# 1. Salin file DTB fixed ke direktori boot DTB Armbian Anda
+# 1. Cadangkan (backup) file DTB asli
+sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
+
+# 2. Timpa dengan file DTB fixed
+sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+
+# 3. Reboot STB
+sudo reboot
+```
+
+#### Metode B: Mengubah Path DTB di `uEnv.txt`
+Salin file DTB fixed dengan nama aslinya, lalu arahkan konfigurasi boot ke file tersebut:
+```bash
+# 1. Salin file DTB fixed ke direktori boot
 sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
 
 # 2. Buka file konfigurasi boot
 sudo nano /boot/uEnv.txt
 ```
-Cari baris `FDT=` dan arahkan ke file DTB yang baru:
+Arahkan baris `FDT=` ke nama file DTB fixed:
 ```ini
 FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
 ```
