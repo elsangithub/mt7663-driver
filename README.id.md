@@ -225,32 +225,27 @@ sudo reboot
 
 ---
 
-## 🔄 Pemakaian Saat Upgrade Kernel (Kernel Upgrades)
+## 🔄 Pemakaian Saat Berganti Versi Kernel
 
-Paket ini dirancang menggunakan standar **DKMS (Dynamic Kernel Module Support)** agar driver tetap dapat digunakan saat Anda memperbarui atau berganti versi kernel:
+Jika Anda memperbarui atau berganti versi kernel di TV box Anda:
 
-### 1. Syarat Utama:
-Setiap kali memasang kernel Ophub baru, pastikan Anda juga memasang paket header yang cocok secara bersamaan:
-```bash
-sudo dpkg -i linux-image-<versi>-ophub_*.deb linux-headers-<versi>-ophub_*.deb
-```
-Jika kedua paket dipasang bersamaan, DKMS akan otomatis terpicu untuk mengompilasi modul driver saat proses instalasi kernel berlangsung.
-
-### 2. Jika Anda Sudah Masuk (Boot) ke Kernel Baru:
-Distribusi Armbian Ophub tidak menjalankan daemon DKMS otomatis saat proses startup boot. Jika Anda sudah berada di kernel baru dan driver Wi-Fi belum aktif, Anda dapat memicu kompilasi ulang secara instan (~15 detik) menggunakan salah satu opsi berikut:
-
-- **Opsi A: Autoinstall via DKMS (Direkomendasikan)**
-  ```bash
-  sudo dkms autoinstall
-  ```
-- **Opsi B: Konfigurasi Ulang Paket**
-  ```bash
-  sudo dpkg-reconfigure mt7663-dkms
-  ```
-- **Opsi C: Pasang Ulang Paket .deb**
-  ```bash
-  sudo dpkg -i mt7663-dkms_1.0.6_all.deb
-  ```
+1. Pastikan direktori header kernel aktif tersedia:
+   ```bash
+   ls -d /usr/src/linux-headers-$(uname -r)
+   ```
+2. Jalankan salah satu perintah berikut untuk membangun ulang driver untuk kernel baru Anda (~15-20 detik):
+   - **Opsi 1: Pasang Ulang Paket .deb (Paling Mudah)**
+     ```bash
+     sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+     ```
+   - **Opsi 2: Pemicu Otomatis via DKMS**
+     ```bash
+     sudo dkms autoinstall
+     ```
+   - **Opsi 3: Konfigurasi Ulang Paket**
+     ```bash
+     sudo dpkg-reconfigure mt7663-dkms
+     ```
 
 ---
 

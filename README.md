@@ -226,30 +226,25 @@ sudo reboot
 
 ## 🔄 Using Across Kernel Upgrades
 
-This package uses **DKMS (Dynamic Kernel Module Support)** to ensure seamless operation when updating or switching kernels:
+If you update or switch kernel versions on your TV box:
 
-### 1. Crucial Requirement:
-Whenever you install a new Ophub kernel, always ensure you install its matching headers package:
-```bash
-sudo dpkg -i linux-image-<version>-ophub_*.deb linux-headers-<version>-ophub_*.deb
-```
-If both packages are installed together, DKMS will automatically trigger and build the module during the kernel installation process.
-
-### 2. If You Already Booted into the New Kernel:
-Armbian Ophub does not run a background DKMS daemon during startup boot. If you are already booted into the new kernel and the Wi-Fi module is not yet compiled, you can trigger the build instantly (~15 seconds) using any of the following options:
-
-- **Option A: Autoinstall via DKMS (Recommended)**
-  ```bash
-  sudo dkms autoinstall
-  ```
-- **Option B: Reconfigure the Package**
-  ```bash
-  sudo dpkg-reconfigure mt7663-dkms
-  ```
-- **Option C: Reinstall the Debian Package**
-  ```bash
-  sudo dpkg -i mt7663-dkms_1.0.6_all.deb
-  ```
+1. Confirm that kernel headers for your active kernel are present:
+   ```bash
+   ls -d /usr/src/linux-headers-$(uname -r)
+   ```
+2. Run any of the following commands to rebuild the driver for your new kernel (~15-20 seconds):
+   - **Option 1: Reinstall the Package (Easiest)**
+     ```bash
+     sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+     ```
+   - **Option 2: Trigger via DKMS**
+     ```bash
+     sudo dkms autoinstall
+     ```
+   - **Option 3: Reconfigure Package**
+     ```bash
+     sudo dpkg-reconfigure mt7663-dkms
+     ```
 
 ---
 
