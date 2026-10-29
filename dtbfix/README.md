@@ -21,7 +21,7 @@ This directory contains 3 Device Tree Blob (`.dtb`) variants for FiberHome HG680
 ```text
 8a55a85bc3676fc350cc09418d4945e516f53a172a6130a9339d556a71e8ec4a  meson-g12a-hg680-fj-ori.dtb
 5689deafc728165fd9549e1880c2981fab943574037928e24815c9b42ffaec57  meson-g12a-hg680-fj-fixed.dtb
-a9796296036147ea10733c14406c3701f029de3d9bd0ebbe4a4eefee2e796b3b  meson-g12a-hg680-fj-uni.dtb
+1af098f3f49f1adbe19b686921ee16a75e2301ca542324efc7a33ba24d2ba166  meson-g12a-hg680-fj-uni.dtb
 ```
 
 ---
