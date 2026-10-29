@@ -250,6 +250,10 @@ Jika Anda memperbarui atau berganti versi kernel di TV box Anda:
      ```bash
      sudo dpkg-reconfigure mt7663-dkms
      ```
+3. Lakukan reboot untuk memuat modul baru dan menginisialisasi hardware:
+   ```bash
+   sudo reboot
+   ```
 
 ---
 

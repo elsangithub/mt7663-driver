@@ -249,6 +249,10 @@ If you update or switch kernel versions on your TV box:
      ```bash
      sudo dpkg-reconfigure mt7663-dkms
      ```
+3. Reboot the device to load the new module and initialize hardware:
+   ```bash
+   sudo reboot
+   ```
 
 ---
 
