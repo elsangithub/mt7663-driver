@@ -11,19 +11,20 @@
 
 Driver kernel Linux *out-of-tree* berkinerja tinggi yang telah di-*patch* khusus untuk modul **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac.
 
-Dioptimalkan secara khusus untuk mengatasi batasan arsitektur Amlogic SoC (S905X2 / G12A, S905X3 / SM1, S905W2, dll.), dan telah diuji serta divalidasi langsung secara fisik pada perangkat **FiberHome HG680-FJ**.
+Dioptimalkan secara khusus untuk mengatasi batasan arsitektur pengontrol SDIO Amlogic G12A (S905X2), dan telah diuji serta divalidasi langsung secara fisik pada perangkat **FiberHome HG680-FJ**.
 
 > [!NOTE]
 > **Lingkungan yang Telah Teruji & Tervalidasi:**
 > Driver ini telah diuji dan diverifikasi secara langsung pada rilis **Armbian by Ophub** berikut:
 > - **Debian 12 (Bookworm)** dengan kernel **`6.18.56-ophub`**
 > - **Debian 13 (Trixie)** dengan kernel **`6.12.112-ophub`**
+> - **Debian 12 (Bookworm)** dengan kernel **`5.10.272-ophub`** *(dengan DTB Universal `dtbfix/meson-g12a-hg680-fj-uni.dtb`)*
 >
 > Rilis Ophub memuat penyesuaian khusus pada Device Tree (DTB) dan subsistem clock/daya untuk TV box Amlogic.
 
 > [!WARNING]
 > **Pernyataan Kompatibilitas untuk Versi Kernel Lain:**
-> Meskipun arsitektur DKMS memungkinkan kompilasi otomatis pada versi Linux lainnya, **tetap ada kemungkinan driver belum cocok 100%** dengan rilis kernel yang belum pernah kami uji (misalnya kernel *mainline vanilla*, kernel 5.x lawas, atau kernel masa depan yang mengubah struktur API jaringan internal Linux). Jika Anda menemukan kegagalan kompilasi atau masalah saat dijalankan di versi kernel lain, silakan buat laporan kendala di menu *GitHub Issues* dengan melampirkan log `uname -a` dan `dmesg`.
+> Meskipun arsitektur DKMS memungkinkan kompilasi otomatis pada versi Linux lainnya, **tetap ada kemungkinan driver belum cocok 100%** dengan rilis kernel yang belum pernah kami uji (misalnya kernel *mainline vanilla*, kernel non-LTS, atau rilis kernel masa depan yang mengubah struktur API jaringan internal Linux). Jika Anda menemukan kegagalan kompilasi atau masalah saat dijalankan di versi kernel lain, silakan buat laporan kendala di menu *GitHub Issues* dengan melampirkan log `uname -a` dan `dmesg`.
 
 ---
 

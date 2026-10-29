@@ -11,19 +11,20 @@
 
 Patched, high-performance out-of-tree Linux kernel driver for the **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac combo module.
 
-Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and physically verified on the **FiberHome HG680-FJ**.
+Tuned specifically for Amlogic G12A (S905X2) SDIO controller architecture constraints, tested and physically verified on the **FiberHome HG680-FJ**.
 
 > [!NOTE]
 > **Verified Environments:**
 > This driver has been specifically tested and validated on the following **Armbian by Ophub** releases:
 > - **Debian 12 (Bookworm)** with kernel **`6.18.56-ophub`**
 > - **Debian 13 (Trixie)** with kernel **`6.12.112-ophub`**
+> - **Debian 12 (Bookworm)** with kernel **`5.10.272-ophub`** *(with Universal DTB `dtbfix/meson-g12a-hg680-fj-uni.dtb`)*
 >
 > Ophub builds incorporate specific device tree (DTB) and power/clock tree patches for Amlogic TV boxes.
 
 > [!WARNING]
 > **Compatibility Disclaimer for Other Kernel Versions:**
-> While DKMS enables automatic compilation on other Linux versions, **there is always a possibility of incompatibility** with untested kernel releases (e.g., mainline vanilla kernels, older 5.x trees, or newer kernel versions with modified internal network APIs). If you encounter build or runtime errors on other versions, please open a GitHub Issue with your `uname -a` and `dmesg` logs.
+> While DKMS enables automatic compilation on other Linux versions, **there is always a possibility of incompatibility** with untested kernel releases (e.g., mainline vanilla kernels, non-LTS releases, or newer kernel versions with breaking internal network APIs). If you encounter build or runtime errors on other versions, please open a GitHub Issue with your `uname -a` and `dmesg` logs.
 
 ---
 
