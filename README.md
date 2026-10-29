@@ -1,145 +1,168 @@
 # MediaTek MT7663 / MT7661 SDIO Wi-Fi Driver for Linux (Kernel 6.12+ / 6.18+ LTS)
-### High-Performance Standalone Wi-Fi for Amlogic TV Boxes (Armbian / Ophub)
 
-Patched, high-performance out-of-tree Linux kernel driver for the **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac combo module.
+[![Release](https://img.shields.io/github/v/release/elsangithub/mt7663-driver?color=blue&label=release)](https://github.com/elsangithub/mt7663-driver/releases)
+[![Build & Release](https://github.com/elsangithub/mt7663-driver/actions/workflows/release.yml/badge.svg)](https://github.com/elsangithub/mt7663-driver/actions/workflows/release.yml)
+[![DKMS Ready](https://img.shields.io/badge/DKMS-Automated_Build-brightgreen.svg)](https://github.com/elsangithub/mt7663-driver)
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL_2.0-blue.svg)](https://opensource.org/licenses/GPL-2.0)
 
-Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and validated on the **FiberHome HG680-FJ** running **Armbian Ophub** on **Linux Kernel 6.12.x / 6.18+ LTS**.
+Driver kernel Linux out-of-tree berkinerja tinggi yang telah di-patch khusus untuk modul **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac.
+
+Dioptimalkan secara khusus untuk mengatasi batasan arsitektur Amlogic SoC (S905X2 / G12A, S905X3 / SM1, S905W2, dll.), dan telah diuji serta divalidasi penuh pada perangkat **FiberHome HG680-FJ** yang menjalankan **Armbian Ophub** pada **Linux Kernel 6.12.x / 6.18+ LTS**.
+
+---
+
+## 🔍 Hardware Compatibility & Varian Chipset FiberHome HG680-FJ
+
+> [!NOTE]
+> Perangkat STB **FiberHome HG680-FJ** (Amlogic S905X2 / G12A) di pasaran beredar dengan **2 varian modul Wi-Fi internal** tergantung batch produksi pabrik:
+
+| Varian Hardware | Modul Fisik | Core Chipset Internal | Driver Linux yang Digunakan |
+| :--- | :--- | :--- | :--- |
+| **Varian A** | MediaTek MT7668 | MediaTek MT7668 | Driver in-tree kernel Linux bawaan (`mt7668u` / `mt7668`) |
+| **Varian B** | AMPAK MT7661RSN | **MediaTek MT7663** (`037A:7663`) | **Driver DKMS ini (`mt7663-dkms`)** |
+
+- **Unit MT7668**: Sudah didukung langsung (*out-of-the-box*) oleh kernel Linux modern standar.
+- **Unit AMPAK MT7661RSN (MT7663)**: **Tidak didukung** oleh driver in-tree kernel Linux standar (interface Wi-Fi tidak muncul atau hardware gagal diinisialisasi). Repositori ini diciptakan khusus agar unit dengan modul AMPAK MT7661RSN / MT7663 dapat menggunakan konektivitas Dual-Band (2.4 GHz & 5 GHz) secara stabil, kencang, dan bebas hang.
+- **Koeksistensi Bersih**: Driver ini menggunakan konfigurasi firmware terisolasi (`/lib/firmware/wifi_mt7661.cfg`), sehingga jika Anda menggunakan backup image sistem yang sama pada unit MT7668 dan MT7663, konfigurasi keduanya tidak akan saling bentrok atau mengganggu satu sama lain.
+
+### Cara Memeriksa Varian Chipset di STB Anda:
+Jalankan perintah berikut di terminal STB:
+```bash
+cat /sys/bus/sdio/devices/*/device 2>/dev/null || cat /sys/bus/sdio/devices/*/vendor 2>/dev/null
+```
+Jika mendeteksi vendor `0x037a` dan device `0x7663` atau `0x7603`, maka unit Anda menggunakan modul **AMPAK MT7661RSN (MT7663)** dan memerlukan driver ini.
 
 > [!WARNING]
-> **Kernel 5.x (5.10 / 5.15) is NOT supported on FiberHome HG680-FJ!**
-> The HG680-FJ Device Tree (meson-g12a-hg680-fj.dtb) requires mlogic,meson-g12-pwm-v2 to supply the 32.768 KHz SDIO reference clock. This driver is only present in Linux 6.x+. On Kernel 5.x, SDIO hardware power and clock remain uninitialized, preventing Wi-Fi hardware detection. Always use Linux 6.12+ or 6.18+ on this device.
+> **Kernel 5.x (5.10 / 5.15) TIDAK didukung pada FiberHome HG680-FJ!**
+> Device Tree HG680-FJ (`meson-g12a-hg680-fj.dtb`) memerlukan driver `amlogic,meson-g12-pwm-v2` untuk menyuplai reference clock SDIO 32.768 KHz. Driver clock ini hanya tersedia di Linux 6.x+. Pada Kernel 5.x, daya dan clock SDIO tetap mati sehingga modul Wi-Fi tidak terdeteksi oleh hardware. Gunakan selalu Kernel Linux 6.12+ atau 6.18+ LTS.
 
 ---
 
-## ???? Key Highlights & Verified Benchmarks (FiberHome HG680-FJ)
+## 🚀 Fitur Unggulan & Hasil Pengujian (FiberHome HG680-FJ)
 
-- **Pure Standalone Wi-Fi**: 100% stable operation with Ethernet cable disconnected (`eth0` down).
-- **Dual-Band 2.4 GHz & 5 GHz**: Full 802.11n 2x2 MIMO on 2.4 GHz (up to 62 Mbps TCP) and 802.11ac VHT on 5 GHz (up to 73+ Mbps TCP, 3.2 ms latency, 0.0% packet loss).
-- **Amlogic G12A SRAM Burst Protection**: Resolves the infamous `WASR_TX1_OVER_FLOW` and SDIO FIFO stalls caused by Amlogic's 1536-byte single-request hardware constraint (`amlogic,dram-access-quirk`).
-- **Native SMP Multi-Core CPU Affinity**: Kernel worker threads (`rx_thread`, `hif_thread`, `main_thread`) automatically bind to CPUs 1, 2, and 3 (`set_cpus_allowed_ptr`), completely offloading packet and bus processing from CPU0.
-- **Instant Udev Hardware IRQ Routing**: SDIO interrupt line (`ffe03000.mmc`) is mapped automatically to CPU 2 and 3 on device registration, keeping system timers on CPU0 responsive without jitter.
-- **Zero-Hang Warm Reboots**: Clean SDIO bus shutdown sequence via `mt7663-shutdown.service` and `mmc-pwrseq` hardware reset pin pulsing ensures 100% reliable detection across soft reboots (`sudo reboot`).
-- **Coexistence with MT7668**: Uses dedicated `/lib/firmware/wifi_mt7661.cfg` so MT7668 and MT7663 units can share identical root filesystems without configuration conflicts.
+- **Pure Standalone Wi-Fi**: 100% stabil beroperasi mandiri tanpa perlu kabel LAN terhubung (`eth0` down).
+- **Dual-Band 2.4 GHz & 5 GHz**: Mendukung 802.11n 2x2 MIMO di 2.4 GHz (hingga 62+ Mbps TCP) dan 802.11ac VHT di 5 GHz (hingga 73+ Mbps TCP, latensi 3.2 ms, 0.0% packet loss).
+- **Amlogic G12A SRAM Burst Protection**: Mengatasi crash `WASR_TX1_OVER_FLOW` dan SDIO FIFO stall akibat batasan hardware Amlogic buffer 1536-byte (`amlogic,dram-access-quirk`).
+- **SMP Multi-Core CPU Affinity**: Kernel worker thread (`rx_thread`, `hif_thread`, `main_thread`) dialokasikan otomatis ke CPU 1, 2, dan 3 (`set_cpus_allowed_ptr`), membebaskan CPU0 dari beban pemrosesan paket jaringan.
+- **Dynamic Hardware IRQ Routing**: Interupsi SDIO (`ffe03000.mmc`) diarahkan otomatis ke CPU 2 dan 3 saat registrasi perangkat via udev rule, menjaga timer sistem di CPU0 tetap responsif tanpa jitter.
+- **Zero-Hang Warm Reboot**: Integrasi `mt7663-shutdown.service` memutus controller MMC sebelum sistem shutdown, menjamin deteksi hardware tetap 100% mulus saat restart (`sudo reboot`).
 
 ---
 
-## ???? Installation Instructions (Armbian Ophub)
+## 📦 Panduan Instalasi (Armbian Ophub)
 
 > [!IMPORTANT]
-> **Do NOT run `apt install linux-headers-$(uname -r)` on Armbian Ophub!**
-> Standard Debian/Ubuntu repositories do not host custom Ophub kernels. On Armbian Ophub, kernel headers are **already pre-installed** in `/usr/src/linux-headers-$(uname -r)`.
+> **JANGAN menjalankan `apt install linux-headers-$(uname -r)` di Armbian Ophub!**
+> Repositori standar Debian/Ubuntu tidak menyediakan kernel custom Ophub. Di Armbian Ophub, header kernel **sudah terpasang otomatis** di `/usr/src/linux-headers-$(uname -r)`.
 
-### Step 1: Install Required Build Tools & DKMS
-Only install standard packages from apt (headers are already on your system):
+### Langkah 1: Pasang Paket Pendukung Build & DKMS
 ```bash
 sudo apt update
 sudo apt install -y dkms build-essential wget
 ```
 
-### Step 2: Verify Kernel Headers are Present
-Run this quick check to confirm Ophub's pre-installed headers:
+### Langkah 2: Verifikasi Keberadaan Kernel Headers
 ```bash
 ls -d /usr/src/linux-headers-$(uname -r)
 ```
-*(If the folder appears, your system is 100% ready for DKMS).*
+*(Jika direktori muncul, sistem Anda siap 100% untuk kompilasi DKMS).*
 
-### Step 3: Download & Install the Debian Package (.deb)
+### Langkah 3: Unduh & Pasang Paket Debian (.deb)
 ```bash
-# Download the latest release package (v1.0.5)
-wget https://github.com/<your-username>/mt7663-driver/releases/download/v1.0.5/mt7663-dkms_1.0.5_all.deb
+# Unduh paket rilis resmi terbaru (v1.0.6)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.6/mt7663-dkms_1.0.6_all.deb
 
-# Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.5_all.deb
+# Pasang paket (DKMS akan otomatis mengompilasi modul untuk kernel aktif dalam ~15-20 detik)
+sudo dpkg -i mt7663-dkms_1.0.6_all.deb
 ```
 
-### Step 4: Reboot
+### Langkah 4: Muat Driver atau Reboot
+Driver langsung aktif setelah instalasi. Untuk memastikan semua layanan tersinkronisasi sempurna:
 ```bash
 sudo reboot
 ```
 
 ---
 
-## ???? Using Across Different Kernels (e.g. Linux 5.10.x-ophub, 5.15.x, 6.1.x)
+## 📶 Menghubungkan & Memverifikasi Wi-Fi
 
-This package uses **DKMS (Dynamic Kernel Module Support)** and includes universal kernel compatibility shims:
-
-- **Switching Kernels via Ophub**:
-  When installing a new Ophub kernel (e.g., switching to `5.10.261-ophub`), ensure you install all three matching deb packages provided by Ophub:
-  1. `linux-image-<version>-ophub_*.deb`
-  2. `linux-dtb-<version>-ophub_*.deb`
-  3. `linux-headers-<version>-ophub_*.deb`  *(Essential for DKMS)*
-
-- **Automatic DKMS Rebuild**:
-  Once the new kernel boots, simply run:
-  ```bash
-  sudo dpkg -i mt7663-dkms_1.0.5_all.deb
-  ```
-  DKMS detects the new kernel version and compiles a dedicated binary module tailored for that exact kernel release.
-
----
-
-## ???? Connecting & Verifying Wi-Fi
-
-### Connect to Wi-Fi via Terminal:
+### Hubungkan ke Jaringan Wi-Fi via Terminal:
 ```bash
-# Connect to your Wi-Fi SSID
-sudo nmcli dev wifi connect "YOUR_SSID" password "YOUR_PASSWORD"
+sudo nmcli dev wifi connect "NAMA_SSID_ANDA" password "PASSWORD_WIFI"
 ```
 
-### Verify Connection & Physical Link Rate:
+### Periksa Status Koneksi & Kecepatan Link Fisik:
 ```bash
 iw dev wlan0 link
 ```
-*Expected output (5 GHz band)*:
-- `SSID: YOUR_5G_SSID`
-- `freq: 5180.0` (Channel 36) or `5785.0` (Channel 157)
-- `signal: -38 dBm` to `-50 dBm`
-- `tx bitrate: 156.0 MBit/s` (or higher)
+*Contoh output (Frekuensi 5 GHz)*:
+- `SSID: NAMA_SSID_ANDA`
+- `freq: 5180.0` (Channel 36) atau `5785.0` (Channel 157)
+- `signal: -38 dBm` hingga `-50 dBm`
+- `tx bitrate: 156.0 MBit/s` (atau lebih tinggi)
 
-### Verify Multi-Core Interrupt Offloading:
+### Verifikasi Distribusi IRQ Multi-Core:
 ```bash
 grep -E "CPU|mmc" /proc/interrupts
 ```
-*Notice that SDIO interrupts (`ffe03000.mmc`) accumulate heavily on **CPU2**, leaving **CPU0** completely unburdened!*
-
-### Test Network Speed & Latency:
-```bash
-speedtest
-```
+*Interupsi SDIO (`ffe03000.mmc`) akan terdistribusi ke **CPU2/CPU3**, menjaga **CPU0** tetap bebas beban.*
 
 ---
 
-## ??????? Architecture & Under-the-Hood Fixes
+## 🗑️ Cara Hapus Bersih (Clean Uninstallation)
 
-| Component | Root Cause in Stock Driver | Solution in v1.0.5 |
+Jika Anda ingin mencopot pemasangan driver ini dan mengembalikan sistem ke kondisi semula, paket ini dilengkapi dengan script pembersih otomatis (`prerm` dan `postrm`) yang memastikan tidak ada residu konfigurasi yang tertinggal.
+
+### Opsi 1: Menghapus Driver (Remove Package)
+Menonaktifkan dan menghapus modul DKMS dari sistem:
+```bash
+sudo dpkg -r mt7663-dkms
+```
+
+### Opsi 2: Hapus Bersih Total Termasuk Seluruh Konfigurasi (Purge - Direkomendasikan)
+Menghapus paket, modul DKMS, aturan udev tuning, konfigurasi sysctl, service shutdown, serta file konfigurasi firmware:
+```bash
+sudo apt purge -y mt7663-dkms
+```
+
+#### Apa yang Dibersihkan Secara Otomatis Saat Penghapusan?
+1. Menghentikan interface Wi-Fi (`ip link set dev wlan0 down`).
+2. Meng-unload module kernel dari memori (`rmmod wlan_mt7663_sdio`).
+3. Menghapus pendaftaran DKMS dan binari modul yang terkompilasi dari `/var/lib/dkms/mt7663-dkms/`.
+4. Menghapus file auto-load module di `/etc/modules-load.d/wlan_mt7663_sdio.conf`.
+5. Menonaktifkan dan menghapus systemd unit `/etc/systemd/system/mt7663-shutdown.service`.
+6. Menghapus script dan aturan IRQ udev `/etc/udev/rules.d/99-wlan-performance.rules`.
+7. Menghapus parameter kernel TCP buffer di `/etc/sysctl.d/99-wifi-throughput.conf`.
+
+---
+
+## 🛠️ Rangkuman Arsitektur & Perbaikan Masalah
+
+| Komponen | Penyebab pada Driver Bawaan | Solusi di Driver Ini |
 | :--- | :--- | :--- |
-| **Amlogic SDIO Burst** | Host `max_req_size = 1536` due to `amlogic,dram-access-quirk`. Driver buffered 4096B, triggering multi-CMD53 splitting and `WASR_TX1_OVER_FLOW`. | Clamped coalescing buffer flush in `kalDevWriteData` (`sdio.c`) to `host->max_req_size` (1536B) and enforced netdev MTU to 1408. |
-| **CPU0 Bottleneck** | ARM GICv2 routes all SPI interrupts to CPU0 by default; MediaTek's internal affinity code relied on proprietary Android kernel APIs (`mt_sched_setaffinity`). | Replaced with standard Linux kernel `set_cpus_allowed_ptr()` in `gl_kal.c` to bind `rx_thread` and `hif_thread` to CPUs 1-3. |
-| **Hardware IRQ Routing** | Manual or fragile systemd unit timing races during early boot. | Integrated instantaneous dynamic trigger into `/usr/lib/udev/wlan-irq-tune.sh` via `99-wlan-performance.rules`. |
-| **PMTU Packet Drops** | Asymmetric MTU (1408 local vs 1500 remote) caused silent packet blackholes when path discovery was disabled (`tcp_mtu_probing = 0`). | Automated `net.ipv4.tcp_mtu_probing = 1` and `tcp_moderate_rcvbuf = 1` in `/etc/sysctl.d/99-wifi-throughput.conf` to achieve 0.0% packet loss. |
-| **802.11ac Performance** | Stock `wifi_mt7661.cfg` defaulted aggregation and beamforming to disabled. | Enabled `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, and doubled processing loops (`HifTxLoop 32`, `OsTxLoop 16`). |
-| **Warm Reboot Reliability** | Always-on power rails on TV boxes leave MT7663 state machine active after SoC reset, leading to CMD5 probe timeout (error -110). | Integrated `mt7663-shutdown.service` to unbind host MMC controller prior to reset, triggering clean hardware reset sequence. |
+| **Amlogic SDIO Burst** | Host `max_req_size = 1536` karena `amlogic,dram-access-quirk`. Driver menampung 4096B sehingga memicu split CMD53 dan error `WASR_TX1_OVER_FLOW`. | Coalescing buffer dibatasi ke `host->max_req_size` (1536B) di `kalDevWriteData` (`sdio.c`) dan netdev MTU disesuaikan ke 1408. |
+| **CPU0 Bottleneck** | ARM GICv2 mengarahkan semua interupsi SPI ke CPU0; kode afinitas MediaTek lama memakai API proprietary Android (`mt_sched_setaffinity`). | Diganti dengan API standar Linux kernel `set_cpus_allowed_ptr()` di `gl_kal.c` untuk mengikat `rx_thread` dan `hif_thread` ke CPU 1-3. |
+| **Hardware IRQ Routing** | Race condition pada timing eksekusi systemd saat early boot. | Diintegrasikan ke script udev `/usr/lib/udev/wlan-irq-tune.sh` via `99-wlan-performance.rules` yang terpicu tepat saat MMC terdaftar. |
+| **PMTU Packet Drops** | MTU asimetris (1408 lokal vs 1500 remote) memicu packet blackhole jika PMTU probing mati (`tcp_mtu_probing = 0`). | Otomatisasi `net.ipv4.tcp_mtu_probing = 1` dan `tcp_moderate_rcvbuf = 1` di `/etc/sysctl.d/99-wifi-throughput.conf` (0.0% packet loss). |
+| **802.11ac Performance** | Konfigurasi default mematikan agregasi frame dan beamforming. | Mengaktifkan `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, dan meningkatkan throughput loop (`HifTxLoop 32`, `OsTxLoop 16`). |
+| **Warm Reboot Reliability** | Power rail STB selalu aktif membuat state machine chip MT7663 tidak ter-reset saat reboot, memicu timeout CMD5 (error -110). | Menambahkan `mt7663-shutdown.service` untuk unbind host MMC sebelum shutdown, memicu reset sequence hardware yang bersih. |
 
 ---
 
-## ??????? Rollback Checkpoint
+## 🔄 Pemakaian Lintas Versi Kernel (Kernel Upgrades)
 
-If you ever need to revert to the previous milestone release (**v1.0.2**):
-```bash
-# Revert instantly using local backup
-sudo dpkg -i /root/mt7663-dkms_1.0.2_all.deb
-```
-*(Git repository is also permanently tagged at `v1.0.2` on commit `e9b5ee0`).*
+Paket ini dirancang dengan standar **DKMS (Dynamic Kernel Module Support)**:
+- Saat Anda melakukan update atau pergantian kernel Ophub di STB, pastikan menginstal paket `linux-headers-<versi>-ophub_*.deb` yang sesuai.
+- DKMS akan secara otomatis mengompilasi ulang driver untuk kernel baru tersebut tanpa perlu konfigurasi ulang manual.
 
 ---
 
-## ???? License
+## 📄 License
 GPL-2.0 / MediaTek Proprietary Base.
 
 ---
 
-## ???? Credits & Acknowledgments
+## 🤝 Credits & Acknowledgments
 - **MediaTek Inc.**: Original chipset architecture and driver baseline.
 - **Ophub & Armbian Community**: Linux kernels for Amlogic TV boxes.
-- **Antigravity**: Development, reverse engineering, and performance optimization.
-
+- **Van der Decken**: Maintainer and developer.
