@@ -155,6 +155,45 @@ sudo apt purge -y mt7663-dkms
 
 ---
 
+## ⚡ Optional Hardware Fix: MicroSD Stability DTB Patch (HG680-FJ)
+
+> [!TIP]
+> **Applicability**: This fix is **completely optional** and applies to **ALL FiberHome HG680-FJ units** (regardless of whether your box uses the **MT7668** or **MT7663** Wi-Fi chipset). It is specifically recommended if you run Armbian booted from a **MicroSD card** (`/dev/mmcblk1`).
+
+### Why is this DTB Patch Needed?
+1. **Wi-Fi TX Burst Voltage Sag & False Card Removal**:
+   During heavy Wi-Fi transmission (e.g., speedtests, large downloads), rapid current spikes cause a momentary voltage drop (*voltage sag*) across the shared 3.3V board power rail. The stock Device Tree uses a mechanical card-detection switch (`cd-gpios = <0x2f 0x2f 0x01>`), which misinterprets this momentary voltage drop as physical card ejection (`mmc1: card aaaa removed`). When running the operating system from MicroSD, this triggers an immediate **Read-Only Filesystem / Kernel Panic crash**.
+2. **Sector 0 I/O Error**:
+   Stock DTB allows clock speeds up to 200 MHz (`max-frequency = <0xbebc200>`). The unshielded PCB traces on HG680-FJ cannot reliably maintain 200 MHz signal integrity, causing CRC corruption on modern SDXC cards.
+3. **I/O Voltage Mismatch**:
+   Stock DTB points `vqmmc-supply` to 1.8V (`VDDAO_1V8`), whereas the physical HG680-FJ MicroSD slot is hardwired to 3.3V.
+
+### What Does `dtbfix/meson-g12a-hg680-fj-fixed.dtb` Change?
+- Replaces mechanical `cd-gpios` with `non-removable;` (locking the card permanently in software like internal eMMC; completely immune to voltage noise and Wi-Fi transmission sag).
+- Caps `max-frequency` to a rock-solid **50 MHz** (`0x2faf080` / standard High-Speed).
+- Locks `vqmmc-supply` to 3.3V (`VDDAO_3V3`).
+
+### How to Apply the Fixed DTB:
+The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb):
+
+```bash
+# 1. Copy the fixed DTB to your active Armbian dtb directory
+sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
+
+# 2. Edit your boot environment file
+sudo nano /boot/uEnv.txt
+```
+Locate the `FDT=` line and update it to point to the fixed DTB:
+```ini
+FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
+```
+Save and exit (`Ctrl + O`, `Enter`, `Ctrl + X`), then reboot:
+```bash
+sudo reboot
+```
+
+---
+
 ## 🛠️ Architecture & Under-the-Hood Fixes
 
 | Component | Root Cause in Stock Driver | Solution in This Package |

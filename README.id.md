@@ -156,6 +156,45 @@ sudo apt purge -y mt7663-dkms
 
 ---
 
+## ⚡ Patch Hardware Opsional: DTB Penstabil MicroSD (HG680-FJ)
+
+> [!TIP]
+> **Cakupan Penggunaan**: Patch ini bersifat **sepenuhnya opsional** dan berlaku untuk **SEMUA unit FiberHome HG680-FJ** (baik yang menggunakan modul Wi-Fi **MT7668** maupun **MT7663**). Patch ini sangat direkomendasikan terutama jika Anda menjalankan Armbian yang di-*boot* dari **kartu MicroSD** (`/dev/mmcblk1`).
+
+### Mengapa Patch DTB Ini Diperlukan?
+1. **Voltage Sag Akibat Transmisi Wi-Fi & False Card Removal**:
+   Saat Wi-Fi bekerja dengan beban tinggi (misalnya saat speedtest atau unduhan besar), terjadi lonjakan arus cepat yang memicu penurunan tegangan tipis (*voltage sag*) pada jalur daya 3.3V bersama di board STB. DTB bawaan menggunakan saklar mekanis pendeteksi kartu (`cd-gpios = <0x2f 0x2f 0x01>`) yang membaca penurunan tegangan sesaat ini sebagai kartu dicabut (`mmc1: card aaaa removed`). Jika sistem operasi berjalan dari MicroSD, hal ini langsung memicu **Read-Only Filesystem / Kernel Panic Crash**.
+2. **Error I/O Sektor 0**:
+   DTB bawaan mengizinkan frekuensi hingga 200 MHz (`max-frequency = <0xbebc200>`). Jalur tembaga PCB slot MicroSD HG680-FJ yang tidak berpelindung tidak stabil pada 200 MHz, menyebabkan CRC corrupt pada kartu MicroSD SDXC modern.
+3. **Ketidakcocokan Voltase I/O**:
+   DTB bawaan mengarahkan jalur sinyal `vqmmc-supply` ke 1.8V (`VDDAO_1V8`), padahal slot fisik HG680-FJ terkunci permanen pada 3.3V.
+
+### Apa yang Diubah oleh `dtbfix/meson-g12a-hg680-fj-fixed.dtb`?
+- Menghapus saklar mekanis `cd-gpios` dan menggantinya dengan flag `non-removable;` (mengunci MicroSD sebagai media permanen anti-lepas seperti halnya eMMC internal; 100% kebal terhadap noise listrik dan *voltage sag* Wi-Fi).
+- Mengunci `max-frequency` pada frekuensi stabil **50 MHz** (`0x2faf080` / standar High-Speed).
+- Mengunci `vqmmc-supply` pada tegangan 3.3V (`VDDAO_3V3`).
+
+### Cara Memasang DTB Fixed Ini:
+File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-fixed.dtb`](dtbfix/meson-g12a-hg680-fj-fixed.dtb):
+
+```bash
+# 1. Salin file DTB fixed ke direktori boot DTB Armbian Anda
+sudo cp dtbfix/meson-g12a-hg680-fj-fixed.dtb /boot/dtb/amlogic/
+
+# 2. Buka file konfigurasi boot
+sudo nano /boot/uEnv.txt
+```
+Cari baris `FDT=` dan arahkan ke file DTB yang baru:
+```ini
+FDT=/dtb/amlogic/meson-g12a-hg680-fj-fixed.dtb
+```
+Simpan dan keluar (`Ctrl + O`, `Enter`, `Ctrl + X`), kemudian restart STB:
+```bash
+sudo reboot
+```
+
+---
+
 ## 🛠️ Rangkuman Arsitektur & Perbaikan Masalah
 
 | Komponen | Penyebab pada Driver Bawaan | Solusi di Driver Ini |
