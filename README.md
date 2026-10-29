@@ -178,5 +178,6 @@ GPL-2.0 / MediaTek Proprietary Base.
 
 ## 🤝 Credits & Acknowledgments
 - **MediaTek Inc.**: Original chipset architecture and driver baseline.
-- **Ophub & Armbian Community**: Linux kernels for Amlogic TV boxes.
+- **[junglon/mt7668-driver](https://github.com/junglon/mt7668-driver)**: Invaluable reference implementation and insights on MediaTek wireless drivers for Amlogic platforms.
+- **Ophub & Armbian Community**: Custom Linux kernels and build tooling for Amlogic TV boxes.
 - **Van der Decken**: Maintainer and developer.
