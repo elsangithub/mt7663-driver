@@ -11,11 +11,19 @@
 
 Driver kernel Linux *out-of-tree* berkinerja tinggi yang telah di-*patch* khusus untuk modul **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac.
 
-Dioptimalkan secara khusus untuk mengatasi batasan arsitektur Amlogic SoC (S905X2 / G12A, S905X3 / SM1, S905W2, dll.), dan telah diuji serta divalidasi penuh pada perangkat **FiberHome HG680-FJ** yang menjalankan **Armbian by Ophub** pada kernel **Linux 6.18.56-ophub**.
+Dioptimalkan secara khusus untuk mengatasi batasan arsitektur Amlogic SoC (S905X2 / G12A, S905X3 / SM1, S905W2, dll.), dan telah diuji serta divalidasi langsung secara fisik pada perangkat **FiberHome HG680-FJ**.
 
 > [!NOTE]
-> **Klarifikasi Lingkungan Pengujian:**
-> Pengujian fisik langsung diverifikasi pada distribusi **Armbian by Ophub** (secara spesifik kernel `6.18.56-ophub`), yang memuat *patch* khusus untuk Device Tree (DTB) dan *power/clock tree* TV box Amlogic. Driver ini **belum** diuji pada kernel *mainline* standar (vanilla). Namun berkat arsitektur DKMS, modul ini dapat dikompilasi secara dinamis untuk kernel target lain selama paket kernel headers yang cocok terpasang.
+> **Lingkungan yang Telah Teruji & Tervalidasi:**
+> Driver ini telah diuji dan diverifikasi secara langsung pada rilis **Armbian by Ophub** berikut:
+> - **Debian 12 (Bookworm)** dengan kernel **`6.18.56-ophub`**
+> - **Debian 13 (Trixie)** dengan kernel **`6.12.112-ophub`**
+>
+> Rilis Ophub memuat penyesuaian khusus pada Device Tree (DTB) dan subsistem clock/daya untuk TV box Amlogic.
+
+> [!WARNING]
+> **Pernyataan Kompatibilitas untuk Versi Kernel Lain:**
+> Meskipun arsitektur DKMS memungkinkan kompilasi otomatis pada versi Linux lainnya, **tetap ada kemungkinan driver belum cocok 100%** dengan rilis kernel yang belum pernah kami uji (misalnya kernel *mainline vanilla*, kernel 5.x lawas, atau kernel masa depan yang mengubah struktur API jaringan internal Linux). Jika Anda menemukan kegagalan kompilasi atau masalah saat dijalankan di versi kernel lain, silakan buat laporan kendala di menu *GitHub Issues* dengan melampirkan log `uname -a` dan `dmesg`.
 
 ---
 
@@ -39,7 +47,7 @@ cat /sys/bus/sdio/devices/*/device 2>/dev/null || cat /sys/bus/sdio/devices/*/ve
 ```
 Jika terminal menampilkan vendor `0x037a` dan device `0x7663` atau `0x7603`, maka unit Anda menggunakan modul **AMPAK MT7661RSN (MT7663)** dan memerlukan driver ini.
 
-> [!WARNING]
+> [!CAUTION]
 > **Kernel Lawas 5.x (5.10 / 5.15) TIDAK didukung pada FiberHome HG680-FJ!**
 > Device Tree HG680-FJ (`meson-g12a-hg680-fj.dtb`) memerlukan driver `amlogic,meson-g12-pwm-v2` untuk menyuplai *reference clock* SDIO 32.768 KHz. Driver clock ini hanya tersedia di kernel Linux 6.x+. Pada Kernel 5.x, daya dan clock SDIO tetap mati sehingga modul Wi-Fi tidak dapat dideteksi oleh hardware.
 

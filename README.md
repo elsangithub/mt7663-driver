@@ -11,11 +11,19 @@
 
 Patched, high-performance out-of-tree Linux kernel driver for the **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac combo module.
 
-Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and validated on the **FiberHome HG680-FJ** running **Armbian by Ophub** on **Linux Kernel 6.18.56-ophub**.
+Tuned specifically for Amlogic SoC hardware constraints (S905X2 / G12A, S905X3 / SM1, S905W2, etc.), tested and physically verified on the **FiberHome HG680-FJ**.
 
 > [!NOTE]
-> **Tested Environment Clarification:**
-> Real-world hardware testing has been verified on **Armbian by Ophub** (specifically kernel `6.18.56-ophub`), which includes specialized DTB and power/clock tree patches for Amlogic TV boxes. It is **not** tested on vanilla upstream mainline kernels. Thanks to DKMS, it builds dynamically for target kernels with matching headers installed.
+> **Verified Environments:**
+> This driver has been specifically tested and validated on the following **Armbian by Ophub** releases:
+> - **Debian 12 (Bookworm)** with kernel **`6.18.56-ophub`**
+> - **Debian 13 (Trixie)** with kernel **`6.12.112-ophub`**
+>
+> Ophub builds incorporate specific device tree (DTB) and power/clock tree patches for Amlogic TV boxes.
+
+> [!WARNING]
+> **Compatibility Disclaimer for Other Kernel Versions:**
+> While DKMS enables automatic compilation on other Linux versions, **there is always a possibility of incompatibility** with untested kernel releases (e.g., mainline vanilla kernels, older 5.x trees, or newer kernel versions with modified internal network APIs). If you encounter build or runtime errors on other versions, please open a GitHub Issue with your `uname -a` and `dmesg` logs.
 
 ---
 
@@ -29,7 +37,7 @@ The **FiberHome HG680-FJ** (Amlogic S905X2 / G12A) TV box was shipped by the fac
 | **Variant B** | AMPAK MT7661RSN | **MediaTek MT7663** (`037A:7663`) | **This DKMS Driver Package (`mt7663-dkms`)** |
 
 - **MT7668 Units**: Supported out-of-the-box by standard modern Linux kernels.
-- **AMPAK MT7661RSN (MT7663) Units**: **Not supported** by the in-tree kernel drivers (no Wi-Fi interface appears or hardware fails to initialize). This repository was created specifically to enable full, stable, high-performance Dual-Band (2.4 GHz & 5 GHz) connectivity on these units.
+- **AMPAK MT7661RSN (MT7663) Units**: **Not supported** by standard in-tree kernel drivers (no Wi-Fi interface appears or hardware fails to initialize). This repository was created specifically to enable full, stable, high-performance Dual-Band (2.4 GHz & 5 GHz) connectivity on these units.
 - **Safe Coexistence**: This driver uses an isolated firmware configuration file (`/lib/firmware/wifi_mt7661.cfg`), ensuring that shared disk images between MT7668 and MT7663 units will not conflict.
 
 ### How to Check Your Unit's Chipset Variant:
@@ -39,7 +47,7 @@ cat /sys/bus/sdio/devices/*/device 2>/dev/null || cat /sys/bus/sdio/devices/*/ve
 ```
 If the output shows vendor `0x037a` and device `0x7663` or `0x7603`, your board is equipped with the **AMPAK MT7661RSN (MT7663)** module and requires this driver.
 
-> [!WARNING]
+> [!CAUTION]
 > **Legacy Kernel 5.x (5.10 / 5.15) is NOT supported on FiberHome HG680-FJ!**
 > The HG680-FJ Device Tree (`meson-g12a-hg680-fj.dtb`) requires `amlogic,meson-g12-pwm-v2` to supply the 32.768 KHz SDIO reference clock. This driver is only present in Linux 6.x+ kernels. On Kernel 5.x, SDIO hardware power and clock remain uninitialized, preventing Wi-Fi hardware detection.
 
