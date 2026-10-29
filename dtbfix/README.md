@@ -1,4 +1,4 @@
-﻿[English](README.md) | [Bahasa Indonesia](README.id.md)
+[English](README.md) | [Bahasa Indonesia](README.id.md)
 
 # FiberHome HG680-FJ Device Tree (DTB) Collection
 
@@ -6,7 +6,7 @@ This directory contains 3 Device Tree Blob (`.dtb`) variants for FiberHome HG680
 
 ---
 
-## ???? DTB Variant Comparison Table
+## 📊 DTB Variant Comparison Table
 
 | File | Target Kernel | MicroSD Clock | Card Detect | SDIO Wi-Fi 32kHz Clock | Notes & Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -16,7 +16,7 @@ This directory contains 3 Device Tree Blob (`.dtb`) variants for FiberHome HG680
 
 ---
 
-## ???? SHA256 Checksums
+## 🔑 SHA256 Checksums
 
 ```text
 8a55a85bc3676fc350cc09418d4945e516f53a172a6130a9339d556a71e8ec4a  meson-g12a-hg680-fj-ori.dtb
@@ -26,19 +26,18 @@ This directory contains 3 Device Tree Blob (`.dtb`) variants for FiberHome HG680
 
 ---
 
-## ???? How to Apply
+## 📖 Usage Guide
 
-Choose your desired DTB variant and copy it to your boot directory:
+Select your preferred DTB file and copy it to your boot partition:
 
 ```bash
 # Example using Universal DTB (recommended):
 sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
 
-# Edit your boot environment file:
+# Edit your boot environment file uEnv.txt:
 sudo nano /boot/uEnv.txt
-# Update the FDT line:
+# Update the FDT line to:
 # FDT=/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb
 
 sudo reboot
 ```
-

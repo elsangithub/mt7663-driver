@@ -23,11 +23,25 @@ jobs:
           chmod +x build-deb.sh
           FORCE_REBUILD=1 ./build-deb.sh "${VERSION}"
 
+      - name: Extract Changelog for Release
+        id: changelog
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          python3 -c "
+          import re
+          text = open('CHANGELOG.md', encoding='utf-8').read()
+          pattern = r'## \[' + re.escape('${VERSION}') + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
+          m = re.search(pattern, text, re.DOTALL)
+          if m:
+              with open('release_notes.md', 'w', encoding='utf-8') as f:
+                  f.write(f'Changes in v{VERSION}:\n\n' + m.group(1).strip() + '\n')
+          "
+
       - name: Publish Release to GitHub
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
+          body_path: release_notes.md
           files: |
             mt7663-dkms_*_all.deb
             dtbfix/*.dtb
-          generate_release_notes: true

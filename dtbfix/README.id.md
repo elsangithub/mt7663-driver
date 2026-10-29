@@ -1,4 +1,4 @@
-﻿[English](README.md) | [Bahasa Indonesia](README.id.md)
+[English](README.md) | [Bahasa Indonesia](README.id.md)
 
 # Koleksi Device Tree (DTB) FiberHome HG680-FJ
 
@@ -6,7 +6,7 @@ Direktori ini berisi 3 varian file Device Tree Blob (`.dtb`) untuk FiberHome HG6
 
 ---
 
-## ???? Tabel Perbandingan Varian DTB
+## 📊 Tabel Perbandingan Varian DTB
 
 | File | Target Kernel | Kecepatan MicroSD | Deteksi Kartu | Clock Wi-Fi SDIO 32kHz | Keterangan & Rekomendasi |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -16,7 +16,7 @@ Direktori ini berisi 3 varian file Device Tree Blob (`.dtb`) untuk FiberHome HG6
 
 ---
 
-## ???? Nilai Hash SHA256
+## 🔑 Nilai Hash SHA256
 
 ```text
 8a55a85bc3676fc350cc09418d4945e516f53a172a6130a9339d556a71e8ec4a  meson-g12a-hg680-fj-ori.dtb
@@ -26,7 +26,7 @@ Direktori ini berisi 3 varian file Device Tree Blob (`.dtb`) untuk FiberHome HG6
 
 ---
 
-## ???? Panduan Penggunaan
+## 📖 Panduan Penggunaan
 
 Pilih salah satu file DTB yang Anda inginkan, lalu salin ke direktori boot:
 
@@ -41,4 +41,3 @@ sudo nano /boot/uEnv.txt
 
 sudo reboot
 ```
-
