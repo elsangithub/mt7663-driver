@@ -161,11 +161,13 @@ sudo apt purge -y mt7663-dkms
 > **Applicability**: This fix is **completely optional** and applies to **ALL FiberHome HG680-FJ units** (regardless of whether your box uses the **MT7668** or **MT7663** Wi-Fi chipset). It is specifically recommended if you run Armbian booted from a **MicroSD card** (`/dev/mmcblk1`).
 
 ### Why is this DTB Patch Needed?
-1. **Wi-Fi TX Burst Voltage Sag & False Card Removal**:
+1. **Fix MicroSD Cards Completely Undetected / Not Recognized**:
+   On many FiberHome HG680-FJ units running the stock DTB, inserted MicroSD cards are **completely undetected** by the operating system (missing from `lsblk` / `fdisk -l`, with no `/dev/mmcblk1` node created). This occurs because the stock DTB attempts 1.8V I/O voltage switching that the board hardware does not support, alongside floating card-detect GPIO lines. This fixed DTB solves this immediately, allowing previously unrecognized MicroSD cards to be detected and mounted normally.
+2. **Wi-Fi TX Burst Voltage Sag & False Card Removal**:
    During heavy Wi-Fi transmission (e.g., speedtests, large downloads), rapid current spikes cause a momentary voltage drop (*voltage sag*) across the shared 3.3V board power rail. The stock Device Tree uses a mechanical card-detection switch (`cd-gpios = <0x2f 0x2f 0x01>`), which misinterprets this momentary voltage drop as physical card ejection (`mmc1: card aaaa removed`). When running the operating system from MicroSD, this triggers an immediate **Read-Only Filesystem / Kernel Panic crash**.
-2. **Sector 0 I/O Error**:
+3. **Sector 0 I/O Error**:
    Stock DTB allows clock speeds up to 200 MHz (`max-frequency = <0xbebc200>`). The unshielded PCB traces on HG680-FJ cannot reliably maintain 200 MHz signal integrity, causing CRC corruption on modern SDXC cards.
-3. **I/O Voltage Mismatch**:
+4. **I/O Voltage Mismatch**:
    Stock DTB points `vqmmc-supply` to 1.8V (`VDDAO_1V8`), whereas the physical HG680-FJ MicroSD slot is hardwired to 3.3V.
 
 ### What Does `dtbfix/meson-g12a-hg680-fj-fixed.dtb` Change?

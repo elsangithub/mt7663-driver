@@ -162,11 +162,13 @@ sudo apt purge -y mt7663-dkms
 > **Cakupan Penggunaan**: Patch ini bersifat **sepenuhnya opsional** dan berlaku untuk **SEMUA unit FiberHome HG680-FJ** (baik yang menggunakan modul Wi-Fi **MT7668** maupun **MT7663**). Patch ini sangat direkomendasikan terutama jika Anda menjalankan Armbian yang di-*boot* dari **kartu MicroSD** (`/dev/mmcblk1`).
 
 ### Mengapa Patch DTB Ini Diperlukan?
-1. **Voltage Sag Akibat Transmisi Wi-Fi & False Card Removal**:
+1. **Mengatasi Kartu MicroSD Sama Sekali Tidak Terdeteksi**:
+   Pada banyak unit FiberHome HG680-FJ yang menggunakan DTB bawaan asli, kartu MicroSD yang dicolokkan sering kali **sama sekali tidak terdeteksi oleh sistem** (tidak muncul di `lsblk` atau `fdisk -l`, dan tidak ada partisi `/dev/mmcblk1` yang terbentuk). Hal ini terjadi karena DTB bawaan memaksakan negosiasi voltase I/O 1.8V yang tidak didukung hardware serta pin GPIO deteksi kartu yang mengambang (*floating*). File DTB fixed ini langsung menuntaskan masalah tersebut sehingga kartu MicroSD yang sebelumnya tidak terbaca bisa langsung terdeteksi dan di-mount secara normal.
+2. **Voltage Sag Akibat Transmisi Wi-Fi & False Card Removal**:
    Saat Wi-Fi bekerja dengan beban tinggi (misalnya saat speedtest atau unduhan besar), terjadi lonjakan arus cepat yang memicu penurunan tegangan tipis (*voltage sag*) pada jalur daya 3.3V bersama di board STB. DTB bawaan menggunakan saklar mekanis pendeteksi kartu (`cd-gpios = <0x2f 0x2f 0x01>`) yang membaca penurunan tegangan sesaat ini sebagai kartu dicabut (`mmc1: card aaaa removed`). Jika sistem operasi berjalan dari MicroSD, hal ini langsung memicu **Read-Only Filesystem / Kernel Panic Crash**.
-2. **Error I/O Sektor 0**:
+3. **Error I/O Sektor 0**:
    DTB bawaan mengizinkan frekuensi hingga 200 MHz (`max-frequency = <0xbebc200>`). Jalur tembaga PCB slot MicroSD HG680-FJ yang tidak berpelindung tidak stabil pada 200 MHz, menyebabkan CRC corrupt pada kartu MicroSD SDXC modern.
-3. **Ketidakcocokan Voltase I/O**:
+4. **Ketidakcocokan Voltase I/O**:
    DTB bawaan mengarahkan jalur sinyal `vqmmc-supply` ke 1.8V (`VDDAO_1V8`), padahal slot fisik HG680-FJ terkunci permanen pada 3.3V.
 
 ### Apa yang Diubah oleh `dtbfix/meson-g12a-hg680-fj-fixed.dtb`?
