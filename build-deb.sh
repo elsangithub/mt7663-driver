@@ -2,11 +2,28 @@
 set -e
 
 PACKAGE=mt7663-dkms
-VERSION=${1:-1.0.6}
+# Otomatis deteksi versi dari dkms.conf sebagai Single Source of Truth
+DEFAULT_VERSION=$(grep -E "^[[:space:]]*PACKAGE_VERSION=" dkms.conf 2>/dev/null | cut -d'"' -f2)
+VERSION=${1:-${DEFAULT_VERSION:-1.0.7}}
+TARGET_DEB="${PACKAGE}_${VERSION}_all.deb"
+
+# Proteksi Version Lock: Mencegah rebuild pada versi yang sudah dirilis/dikunci
+if [ "$FORCE_REBUILD" != "1" ] && [ -f "$TARGET_DEB" ]; then
+    if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null 2>&1; then
+        echo "======================================================================="
+        echo "  [VERSION LOCKED] Rilis v${VERSION} (${TARGET_DEB}) sudah dikunci!"
+        echo "  Versi yang sudah dirilis resmi tidak boleh di-build ulang sembarangan."
+        echo "  Silakan naikkan versi (bump version) untuk membuat rilis baru."
+        echo "  (Gunakan FORCE_REBUILD=1 ./build-deb.sh jika sengaja ingin menimpa)"
+        echo "======================================================================="
+        exit 0
+    fi
+fi
+
 BUILD_DIR=/tmp/${PACKAGE}_build
 SRC_DIR=${BUILD_DIR}/usr/src/mt7663-${VERSION}
 
-echo "Building Debian package for ${PACKAGE}_${VERSION}..."
+echo "Building Debian package for Release v${VERSION} (${TARGET_DEB})..."
 
 rm -rf ${BUILD_DIR}
 mkdir -p ${SRC_DIR}
@@ -28,7 +45,7 @@ sed -i "s/^Version:.*/Version: ${VERSION}/" ${BUILD_DIR}/DEBIAN/control
 sed -i "s/VERSION=\".*\"/VERSION=\"${VERSION}\"/" ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 chmod 755 ${BUILD_DIR}/DEBIAN/preinst ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 
-dpkg-deb --build ${BUILD_DIR} ${PACKAGE}_${VERSION}_all.deb
+dpkg-deb --build ${BUILD_DIR} ${TARGET_DEB}
 rm -rf ${BUILD_DIR}
 
-echo "Package created successfully: ${PACKAGE}_${VERSION}_all.deb"
+echo "Package created successfully: ${TARGET_DEB}"

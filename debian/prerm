@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-VERSION="1.0.6"
+VERSION="1.0.7"
 
 echo "Removing mt7663 ($VERSION) from DKMS..."
 ip link set wlan0 down 2>/dev/null || true

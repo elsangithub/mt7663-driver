@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-VERSION="1.0.6"
+VERSION="1.0.7"
 
 # Detect existing registrations dynamically
 OLD_VERSIONS=$(dkms status -m mt7663 2>/dev/null | awk -F'[/,]' '{print $2}' | sort -u)
@@ -24,10 +24,17 @@ dkms add -m mt7663 -v $VERSION
 # Check if kernel header host tools (modpost) match system glibc, self-heal directly if needed
 KERNEL_BUILD_DIR="/lib/modules/$(uname -r)/build"
 MODPOST_BIN="${KERNEL_BUILD_DIR}/scripts/mod/modpost"
-if [ -d "$KERNEL_BUILD_DIR" ]; then
+MOD_DIR="${KERNEL_BUILD_DIR}/scripts/mod"
+if [ -d "$KERNEL_BUILD_DIR" ] && [ -d "$MOD_DIR" ]; then
     if [ -f "$MODPOST_BIN" ] && ! "$MODPOST_BIN" -h >/dev/null 2>&1; then
         echo "Menyelaraskan toolchain header kernel (rebuilding modpost untuk glibc lokal)..."
-        gcc -O2 -std=gnu11 -I "${KERNEL_BUILD_DIR}/scripts/include" -o "$MODPOST_BIN"             "${KERNEL_BUILD_DIR}/scripts/mod/modpost.c"             "${KERNEL_BUILD_DIR}/scripts/mod/file2alias.c"             "${KERNEL_BUILD_DIR}/scripts/mod/sumversion.c"             "${KERNEL_BUILD_DIR}/scripts/mod/symsearch.c" >/dev/null 2>&1 || true
+        EXTRA_SRCS=""
+        [ -f "${MOD_DIR}/symsearch.c" ] && EXTRA_SRCS="${MOD_DIR}/symsearch.c"
+        gcc -O2 -std=gnu11 -I "${KERNEL_BUILD_DIR}/scripts/include" -o "$MODPOST_BIN" \
+            "${MOD_DIR}/modpost.c" \
+            "${MOD_DIR}/file2alias.c" \
+            "${MOD_DIR}/sumversion.c" \
+            $EXTRA_SRCS >/dev/null 2>&1 || true
     fi
 fi
 

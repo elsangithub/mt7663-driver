@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-10-29
+### Added
+- **Full Linux Kernel 5.10 LTS Support**: Expanded native compatibility to include Linux Kernel 5.10 LTS (e.g. `5.10.272-ophub`) on FiberHome HG680-FJ.
+- **Universal DTB Collection (`dtbfix/`)**: Bundled pre-compiled Device Tree blobs (`meson-g12a-hg680-fj-uni.dtb`, `fixed.dtb`, `ori.dtb`) to provide seamless 32kHz reference clocking and MicroSD hardware stability across both Kernel 5.10 and Kernel 6.x.
+- **Dynamic Cross-Kernel Toolchain Alignment**: Enhanced `debian/postinst` self-healing logic to conditionally inspect header sources for `symsearch.c`, enabling automatic, zero-intervention `modpost` rebuilding across both Kernel 5.x and Kernel 6.x under Debian 12 Bookworm.
+
+### Fixed
+- **Pre-installation Kernel Guard**: Replaced obsolete Kernel < 6.0 warning in `debian/preinst` with informative guidance directing Kernel 5.x users to the universal DTB.
+- **DTC Audio Routing Escape Bug**: Resolved string-splitting octal escape sequence glitch (`Lineout\x08U2`) in Device Tree compilation, ensuring 100% clean ALSA DAPM routing without `axg-sound-card` warnings in `dmesg`.
+
 ## [1.0.6] - 2026-10-29
 ### Added
 - **RF Power Calibration Firmware (`TxPwrLimit_MT76x3.dat`)**: Bundled regulatory transmit power calibration tables directly into `/lib/firmware/`, ensuring optimal linear Power Amplifier (PA) operation for 256-QAM (MCS 8/9) without saturation, distortion, or missing firmware errors in `dmesg`.

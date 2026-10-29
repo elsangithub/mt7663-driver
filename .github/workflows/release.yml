@@ -21,11 +21,13 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           echo "Building version: ${VERSION}"
           chmod +x build-deb.sh
-          ./build-deb.sh "${VERSION}"
+          FORCE_REBUILD=1 ./build-deb.sh "${VERSION}"
 
       - name: Publish Release to GitHub
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
-          files: mt7663-dkms_*_all.deb
+          files: |
+            mt7663-dkms_*_all.deb
+            dtbfix/*.dtb
           generate_release_notes: true

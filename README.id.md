@@ -85,11 +85,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Langkah 3: Unduh & Pasang Paket Debian (.deb)
 ```bash
-# Unduh paket rilis resmi terbaru (v1.0.6)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.6/mt7663-dkms_1.0.6_all.deb
+# Unduh paket rilis resmi terbaru (v1.0.7)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/mt7663-dkms_1.0.7_all.deb
 
 # Pasang paket (DKMS akan otomatis mengompilasi modul untuk kernel aktif dalam ~15-20 detik)
-sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+sudo dpkg -i mt7663-dkms_1.0.7_all.deb
 ```
 
 ### Langkah 4: Muat Driver atau Reboot
@@ -182,26 +182,27 @@ sudo apt purge -y mt7663-dkms
 - Mengunci `vqmmc-supply` pada tegangan 3.3V (`VDDAO_3V3`).
 
 ### Cara Memasang DTB Fixed Ini:
-File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb). Anda dapat memilih salah satu dari dua metode berikut:
+File biner DTB siap pakai telah disediakan di dalam repositori pada direktori [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb) dan juga dapat diunduh langsung dari [GitHub Releases](https://github.com/elsangithub/mt7663-driver/releases). Anda dapat memilih salah satu metode di bawah ini:
 
-#### Metode A: Backup & Timpa Langsung (Direkomendasikan - Tanpa Perlu Edit File Boot)
-Backup file DTB asli Anda, lalu timpa langsung dengan file yang sudah diperbaiki:
+#### Metode A: Unduh Langsung & Timpa (Paling Cepat & Praktis)
+Unduh DTB Universal langsung dari rilis resmi dan timpa DTB lama:
 ```bash
 # 1. Cadangkan (backup) file DTB asli
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
-# 2. Timpa dengan file DTB fixed
-sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+# 2. Unduh dan pasang DTB Universal langsung dari rilis resmi
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
 
 # 3. Reboot STB
 sudo reboot
 ```
+*(Bagi yang meng-clone repositori git secara lokal, Anda juga bisa memakai perintah lokal: `sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb`)*
 
 #### Metode B: Mengubah Path DTB di `uEnv.txt`
-Salin file DTB fixed dengan nama aslinya, lalu arahkan konfigurasi boot ke file tersebut:
+Unduh file DTB fixed dengan nama aslinya, lalu arahkan konfigurasi boot ke file tersebut:
 ```bash
-# 1. Salin file DTB fixed ke direktori boot
-sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
+# 1. Unduh file DTB fixed ke direktori boot
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
 
 # 2. Buka file konfigurasi boot
 sudo nano /boot/uEnv.txt
@@ -241,7 +242,7 @@ Jika Anda memperbarui atau berganti versi kernel di TV box Anda:
 2. Jalankan salah satu perintah berikut untuk membangun ulang driver untuk kernel baru Anda (~15-20 detik):
    - **Opsi 1: Pasang Ulang Paket .deb (Paling Mudah)**
      ```bash
-     sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+     sudo dpkg -i mt7663-dkms_1.0.7_all.deb
      ```
    - **Opsi 2: Pemicu Otomatis via DKMS**
      ```bash

@@ -85,11 +85,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Step 3: Download & Install the Debian Package (.deb)
 ```bash
-# Download the latest verified release package (v1.0.6)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.6/mt7663-dkms_1.0.6_all.deb
+# Download the latest verified release package (v1.0.7)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/mt7663-dkms_1.0.7_all.deb
 
 # Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+sudo dpkg -i mt7663-dkms_1.0.7_all.deb
 ```
 
 ### Step 4: Reboot
@@ -181,26 +181,27 @@ sudo apt purge -y mt7663-dkms
 - Locks `vqmmc-supply` to 3.3V (`VDDAO_3V3`).
 
 ### How to Apply the Fixed DTB:
-The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb). You can use either of the two methods below:
+The pre-compiled binary is provided in the repository under [`dtbfix/meson-g12a-hg680-fj-uni.dtb`](dtbfix/meson-g12a-hg680-fj-uni.dtb) and as a direct download from [GitHub Releases](https://github.com/elsangithub/mt7663-driver/releases). You can apply it using either method below:
 
-#### Method A: Backup & Replace Directly (Recommended - No File Editing Required)
-Backup your original DTB and overwrite it with the fixed version:
+#### Method A: Direct Download & Overwrite (Recommended - Quickest)
+Directly download the Universal DTB and overwrite your stock DTB:
 ```bash
 # 1. Backup the original DTB
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
-# 2. Overwrite with the fixed DTB
-sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb
+# 2. Download and apply Universal DTB directly from official release
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
 
 # 3. Reboot the device
 sudo reboot
 ```
+*(If you cloned the repository locally, you can alternatively use: `sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb`)*
 
 #### Method B: Custom DTB via `uEnv.txt`
-Copy the fixed DTB with its own name and update your boot configuration:
+Download the fixed DTB with its own name and update your boot configuration:
 ```bash
-# 1. Copy the fixed DTB to your boot directory
-sudo cp dtbfix/meson-g12a-hg680-fj-uni.dtb /boot/dtb/amlogic/
+# 1. Download the fixed DTB to your boot directory
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
 
 # 2. Edit your boot environment file
 sudo nano /boot/uEnv.txt
@@ -240,7 +241,7 @@ If you update or switch kernel versions on your TV box:
 2. Run any of the following commands to rebuild the driver for your new kernel (~15-20 seconds):
    - **Option 1: Reinstall the Package (Easiest)**
      ```bash
-     sudo dpkg -i mt7663-dkms_1.0.6_all.deb
+     sudo dpkg -i mt7663-dkms_1.0.7_all.deb
      ```
    - **Option 2: Trigger via DKMS**
      ```bash
