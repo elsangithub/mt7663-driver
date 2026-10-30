@@ -23,38 +23,11 @@ jobs:
           chmod +x build-deb.sh
           FORCE_REBUILD=1 ./build-deb.sh "${VERSION}"
 
-      - name: Extract Changelog for Release
-        id: changelog
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          export VERSION
-          python3 - << 'EOF'
-          import os, re
-          version = os.environ.get('VERSION', '')
-          try:
-              text = open('CHANGELOG.md', encoding='utf-8').read()
-              pattern = r'## \[' + re.escape(version) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
-              m = re.search(pattern, text, re.DOTALL)
-              if not m:
-                  base_ver = version.split('-')[0].split('~')[0]
-                  pattern = r'## \[' + re.escape(base_ver) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
-                  m = re.search(pattern, text, re.DOTALL)
-              with open('release_notes.md', 'w', encoding='utf-8') as f:
-                  if m:
-                      f.write(f'Changes in v{version}:\n\n' + m.group(1).strip() + '\n')
-                  else:
-                      f.write(f'Release v{version}\n')
-          except Exception as e:
-              with open('release_notes.md', 'w', encoding='utf-8') as f:
-                  f.write(f'Release v{version}\n')
-          EOF
-
       - name: Publish Release to GitHub
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
-          body_path: release_notes.md
-          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') || contains(github.ref_name, 'alpha') }}
           files: |
             mt7663-dkms_*_all.deb
             dtbfix/*.dtb
+          generate_release_notes: true
