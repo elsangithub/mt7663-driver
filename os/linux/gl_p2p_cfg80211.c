@@ -421,6 +421,8 @@ struct wireless_dev *mtk_p2p_cfg80211_add_iface(struct wiphy *wiphy,
 			NIC_TX_DESC_AND_PADDING_LENGTH +
 			prChipInfo->txd_append_size;
 		prNewNetDevice->netdev_ops = &p2p_netdev_ops;
+		prNewNetDevice->mtu = 1408;
+		prNewNetDevice->max_mtu = 1408;
 
 		prHif = &prGlueInfo->rHifInfo;
 		ASSERT(prHif);

@@ -849,6 +849,8 @@ u_int8_t p2pNetRegister(struct GLUE_INFO *prGlueInfo,
 	/* net device initialize */
 	netif_carrier_off(prGlueInfo->prP2PInfo[0]->prDevHandler);
 	netif_tx_stop_all_queues(prGlueInfo->prP2PInfo[0]->prDevHandler);
+	prGlueInfo->prP2PInfo[0]->prDevHandler->mtu = 1408;
+	prGlueInfo->prP2PInfo[0]->prDevHandler->max_mtu = 1408;
 
 	/* register for net device */
 	if (register_netdev(prGlueInfo->prP2PInfo[0]->prDevHandler) < 0) {

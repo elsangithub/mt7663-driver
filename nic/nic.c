@@ -717,8 +717,8 @@ void nicProcessAbnormalInterrupt(IN struct ADAPTER
 	}
 
 	/* Fast-path: clear transient RX FIFO underflows instantly without stalling SDIO bus or spamming logs */
-	if (u4Wasr & (WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW)) {
-		u4Wasr &= ~(WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW);
+	if (u4Wasr & (WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW | WASR_TX1_OVER_FLOW)) {
+		u4Wasr &= ~(WASR_RX0_UNDER_FLOW | WASR_RX1_UNDER_FLOW | WASR_TX1_OVER_FLOW);
 		if (!u4Wasr)
 			return;
 	}

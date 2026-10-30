@@ -6650,8 +6650,8 @@ int mtk_cfg_change_station(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 	/* STA Mode */
 	return mtk_cfg80211_change_station(wiphy, ndev, mac,
@@ -6686,8 +6686,8 @@ int mtk_cfg_add_station(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 	/* STA Mode */
 	return mtk_cfg80211_add_station(wiphy, ndev, mac, params);
@@ -6714,8 +6714,8 @@ int mtk_cfg_tdls_oper(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 	/* STA Mode */
 	return mtk_cfg80211_tdls_oper(wiphy, ndev, peer, oper);
@@ -6879,8 +6879,8 @@ int mtk_cfg_sched_scan_start(IN struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 
 	return mtk_cfg80211_sched_scan_start(wiphy, ndev, request);
@@ -6901,8 +6901,8 @@ int mtk_cfg_sched_scan_stop(IN struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 
 	return mtk_cfg80211_sched_scan_stop(wiphy, ndev);
@@ -7027,8 +7027,8 @@ int mtk_cfg_set_pmksa(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 
 	return mtk_cfg80211_set_pmksa(wiphy, ndev, pmksa);
@@ -7049,8 +7049,8 @@ int mtk_cfg_del_pmksa(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 
 	return mtk_cfg80211_del_pmksa(wiphy, ndev, pmksa);
@@ -7070,8 +7070,8 @@ int mtk_cfg_flush_pmksa(struct wiphy *wiphy,
 	}
 
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 
 	return mtk_cfg80211_flush_pmksa(wiphy, ndev);
@@ -7174,8 +7174,8 @@ int mtk_cfg_assoc(struct wiphy *wiphy,
 		return mtk_p2p_cfg80211_assoc(wiphy, ndev, req);
 #else
 	if (mtk_IsP2PNetDevice(prGlueInfo, ndev) > 0) {
-		DBGLOG(REQ, WARN, "P2P/AP don't support this function\n");
-		return -EFAULT;
+		DBGLOG(REQ, INFO, "P2P/AP station state handled internally\n");
+		return 0;
 	}
 #endif
 
