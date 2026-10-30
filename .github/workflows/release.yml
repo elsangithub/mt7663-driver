@@ -23,11 +23,17 @@ jobs:
           chmod +x build-deb.sh
           FORCE_REBUILD=1 ./build-deb.sh "${VERSION}"
 
+      - name: Extract Changelog for Release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          python3 .github/scripts/extract-changelog.py "${VERSION}" > release_notes.md
+
       - name: Publish Release to GitHub
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
+          body_path: release_notes.md
+          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') }}
           files: |
             mt7663-dkms_*_all.deb
             dtbfix/*.dtb
-          generate_release_notes: true
