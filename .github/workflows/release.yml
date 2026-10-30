@@ -32,9 +32,15 @@ jobs:
           text = open('CHANGELOG.md', encoding='utf-8').read()
           pattern = r'## \[' + re.escape('${VERSION}') + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
           m = re.search(pattern, text, re.DOTALL)
-          if m:
-              with open('release_notes.md', 'w', encoding='utf-8') as f:
+          if not m:
+              base_ver = '${VERSION}'.split('-')[0].split('~')[0]
+              pattern = r'## \[' + re.escape(base_ver) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
+              m = re.search(pattern, text, re.DOTALL)
+          with open('release_notes.md', 'w', encoding='utf-8') as f:
+              if m:
                   f.write(f'Changes in v{VERSION}:\n\n' + m.group(1).strip() + '\n')
+              else:
+                  f.write(f'Release v{VERSION}\n')
           "
 
       - name: Publish Release to GitHub
@@ -42,6 +48,7 @@ jobs:
         with:
           name: Release ${{ github.ref_name }}
           body_path: release_notes.md
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') || contains(github.ref_name, 'alpha') }}
           files: |
             mt7663-dkms_*_all.deb
             dtbfix/*.dtb
