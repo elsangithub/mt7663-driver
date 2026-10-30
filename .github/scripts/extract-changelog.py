@@ -7,7 +7,13 @@ version = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('VERSION', '')
 if version.startswith('v'):
     version = version[1:]
 
-changelog_path = 'CHANGELOG.md'
+# Locate CHANGELOG.md reliably
+script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+changelog_path = os.path.join(repo_root, 'CHANGELOG.md')
+if not os.path.exists(changelog_path):
+    changelog_path = 'CHANGELOG.md'
+
 if not os.path.exists(changelog_path):
     print(f"### Release v{version}\n")
     sys.exit(0)
