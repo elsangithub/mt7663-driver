@@ -33,11 +33,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PRERELEASE_FLAG=""
+          TITLE_PREFIX="Release "
           if [[ "${GITHUB_REF_NAME}" == *"rc"* ]] || [[ "${GITHUB_REF_NAME}" == *"beta"* ]]; then
             PRERELEASE_FLAG="--prerelease"
+            TITLE_PREFIX=""
           fi
           gh release create "${GITHUB_REF_NAME}" \
             mt7663-dkms_*_all.deb dtbfix/*.dtb \
-            --title "Release ${GITHUB_REF_NAME}" \
+            --title "${TITLE_PREFIX}${GITHUB_REF_NAME}" \
             --notes-file release_notes.md \
             ${PRERELEASE_FLAG}
