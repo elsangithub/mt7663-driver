@@ -509,21 +509,21 @@ int mtk_cfg_change_iface(struct wiphy *wiphy,
 #endif
 #if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
 int mtk_cfg_add_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr,
 		    struct key_params *params);
 int mtk_cfg_get_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr, void *cookie,
 		    void (*callback)(void *cookie, struct key_params *));
 int mtk_cfg_del_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr);
 int mtk_cfg_set_default_key(struct wiphy *wiphy,
 			    struct net_device *ndev, int link_id,
 			    u8 key_index, bool unicast, bool multicast);
 int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
-		struct net_device *ndev, int link_id, u8 key_index);
+		struct wireless_dev *wdev, int link_id, u8 key_index);
 #else
 int mtk_cfg_add_key(struct wiphy *wiphy,
 		    struct net_device *ndev, u8 key_index,
@@ -543,7 +543,11 @@ int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
 		struct net_device *ndev, u8 key_index);
 #endif
 
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_get_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			const u8 *mac, struct station_info *sinfo);
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_get_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			const u8 *mac, struct station_info *sinfo);
@@ -554,7 +558,11 @@ int mtk_cfg_get_station(struct wiphy *wiphy,
 #endif
 
 #if CFG_SUPPORT_TDLS
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_change_station(struct wiphy *wiphy,
+			   struct wireless_dev *wdev,
+			   const u8 *mac, struct station_parameters *params);
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_change_station(struct wiphy *wiphy,
 			   struct net_device *ndev,
 			   const u8 *mac, struct station_parameters *params);
@@ -563,7 +571,11 @@ int mtk_cfg_change_station(struct wiphy *wiphy,
 			   struct net_device *ndev,
 			   u8 *mac, struct station_parameters *params);
 #endif
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_add_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			const u8 *mac, struct station_parameters *params);
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_add_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			const u8 *mac, struct station_parameters *params);
@@ -603,7 +615,11 @@ int mtk_cfg_tdls_mgmt(struct wiphy *wiphy,
 #endif
 #endif /* CFG_SUPPORT_TDLS */
 
-#if KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_del_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			struct station_del_parameters *params);
+#elif KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_del_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			struct station_del_parameters *params);

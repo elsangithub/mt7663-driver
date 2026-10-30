@@ -1574,10 +1574,18 @@ kalP2PGOStationUpdate(IN struct GLUE_INFO *prGlueInfo,
 			rStationInfo.assoc_req_ies_len =
 				prCliStaRec->u2AssocReqIeLen;
 
+#if (CFG80211_VERSION_CODE >= KERNEL_VERSION(6, 7, 0))
+			if (prP2pGlueInfo->aprRoleHandler->ieee80211_ptr) {
+				cfg80211_new_sta(prP2pGlueInfo->aprRoleHandler->ieee80211_ptr,
+					prCliStaRec->aucMacAddr,
+					&rStationInfo, GFP_KERNEL);
+			}
+#else
 			cfg80211_new_sta(prP2pGlueInfo->aprRoleHandler,
 				/* struct net_device * dev, */
 				prCliStaRec->aucMacAddr,
 				&rStationInfo, GFP_KERNEL);
+#endif
 		} else {
 			++prP2pGlueInfo->i4Generation;
 
@@ -1585,9 +1593,16 @@ kalP2PGOStationUpdate(IN struct GLUE_INFO *prGlueInfo,
 			 *    check GLUE_FLAG_HALT is the temporarily solution.
 			 */
 			if ((prGlueInfo->ulFlag & GLUE_FLAG_HALT) == 0) {
+#if (CFG80211_VERSION_CODE >= KERNEL_VERSION(6, 7, 0))
+				if (prP2pGlueInfo->aprRoleHandler->ieee80211_ptr) {
+					cfg80211_del_sta(prP2pGlueInfo->aprRoleHandler->ieee80211_ptr,
+						prCliStaRec->aucMacAddr, GFP_KERNEL);
+				}
+#else
 				cfg80211_del_sta(prP2pGlueInfo->aprRoleHandler,
 					/* struct net_device * dev, */
 					prCliStaRec->aucMacAddr, GFP_KERNEL);
+#endif
 			}
 		}
 

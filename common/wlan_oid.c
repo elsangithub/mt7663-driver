@@ -2540,8 +2540,8 @@ wlanoidSetAddKey(IN struct ADAPTER *prAdapter, IN void *pvSetBuffer,
 		*pu4SetInfoLen = u4SetBufferLen;
 		return WLAN_STATUS_INVALID_DATA;
 	}
-	/* Exception check */
-	if (prNewKey->u4KeyIndex & 0x0fffff00)
+	/* Exception check (allow BIT(28) IS_AUTHENTICATOR and BITS(30,31)) */
+	if (prNewKey->u4KeyIndex & ~(BITS(30, 31) | IS_AUTHENTICATOR | 0xff))
 		return WLAN_STATUS_INVALID_DATA;
 	/* Exception check, pairwise key must with transmit bit enabled */
 	if ((prNewKey->u4KeyIndex & BITS(30, 31)) == IS_UNICAST_KEY)

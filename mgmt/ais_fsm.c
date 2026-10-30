@@ -2500,7 +2500,7 @@ void aisFsmRunEventScanDone(IN struct ADAPTER *prAdapter,
 
 		}
 	}
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 	if (prBcnRmParam->eState == RM_NO_REQUEST)
 		return;
@@ -2863,7 +2863,7 @@ void aisFsmRunEventJoinComplete(IN struct ADAPTER *prAdapter,
 	/* try to remove timeout blacklist item */
 	aisRemoveDisappearedBlacklist(prAdapter);
 	/* end Support AP Selection */
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 
 	if (prAssocRspSwRfb)
@@ -3568,7 +3568,7 @@ void aisFsmRunEventFoundIBSSPeer(IN struct ADAPTER *prAdapter,
 		break;
 	}
 
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 }				/* end of aisFsmRunEventFoundIBSSPeer() */
 #endif /* CFG_SUPPORT_ADHOC */
@@ -4590,7 +4590,7 @@ void aisFsmRunEventBGSleepTimeOut(IN struct ADAPTER *prAdapter,
 	}
 
 	/* Call aisFsmSteps() when we are going to change AIS STATE */
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 }				/* end of aisFsmBGSleepTimeout() */
 
@@ -4639,7 +4639,7 @@ void aisFsmRunEventIbssAloneTimeOut(IN struct ADAPTER *prAdapter,
 	}
 
 	/* Call aisFsmSteps() when we are going to change AIS STATE */
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 }				/* end of aisIbssAloneTimeOut() */
 
@@ -4749,7 +4749,7 @@ void aisFsmRunEventJoinTimeout(IN struct ADAPTER *prAdapter,
 	}
 
 	/* Call aisFsmSteps() when we are going to change AIS STATE */
-	if (eNextState != prAisFsmInfo->eCurrentState)
+	if (prAdapter->prAisBssInfo != NULL && eNextState != prAisFsmInfo->eCurrentState)
 		aisFsmSteps(prAdapter, eNextState);
 }				/* end of aisFsmRunEventJoinTimeout() */
 

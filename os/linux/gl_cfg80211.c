@@ -939,6 +939,7 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 		return -EINVAL;
 	}
 
+	if (request && request->wdev && request->wdev != gprWdev) return -EOPNOTSUPP;
 	/* debug log removed */
 	DBGLOG(REQ, TRACE, "mtk_cfg80211_scan\n");
 #if (CFG_SUPPORT_QA_TOOL == 1) || (CFG_SUPPORT_LOWLATENCY_MODE == 1)
@@ -5993,10 +5994,13 @@ int mtk_IsP2PNetDevice(struct GLUE_INFO *prGlueInfo,
 
 	prNetDevPrivate = (struct NETDEV_PRIVATE_GLUE_INFO *)
 			  netdev_priv(ndev);
-	iftype = ndev->ieee80211_ptr->iftype;
+	if (ndev->ieee80211_ptr != NULL)
+		iftype = ndev->ieee80211_ptr->iftype;
 
-	/* P2P device/GO/GC always return 1 */
-	if (prNetDevPrivate->ucIsP2p == TRUE)
+	/* P2P device/GO/GC and SoftAP always return 1 */
+	if (prNetDevPrivate && prNetDevPrivate->ucIsP2p == TRUE)
+		ret = 1;
+	else if (iftype == NL80211_IFTYPE_AP)
 		ret = 1;
 	else if (iftype == NL80211_IFTYPE_STATION)
 		ret = 0;
@@ -6111,13 +6115,8 @@ int mtk_init_ap_role(struct GLUE_INFO *prGlueInfo,
 		return -ENOMEM;
 	}
 
-	if ((u4Idx == 0) ||
-	    (prAdapter == NULL) ||
-	    (prAdapter->rP2PNetRegState !=
-	     ENUM_NET_REG_STATE_REGISTERED)) {
-		DBGLOG(INIT, ERROR,
-		       "The wlan0 can't set to AP without p2p0\n");
-		/* System will crash, if p2p0 isn't existing. */
+	if (prAdapter == NULL) {
+		DBGLOG(INIT, ERROR, "prAdapter is NULL\n");
 		return -EFAULT;
 	}
 
@@ -6130,6 +6129,7 @@ int mtk_init_ap_role(struct GLUE_INFO *prGlueInfo,
 	}
 
 	prGlueInfo->prAdapter->prP2pInfo->u4DeviceNum++;
+	prAdapter->rP2PNetRegState = ENUM_NET_REG_STATE_REGISTERED;
 
 	/* reference from p2pNetRegister() */
 	/* The ndev doesn't need register_netdev, only reassign the gPrP2pDev.*/
@@ -6165,6 +6165,8 @@ int mtk_uninit_ap_role(struct GLUE_INFO *prGlueInfo,
 
 	gPrP2pDev[u4Idx] = NULL;
 	gprP2pRoleWdev[u4Idx] = NULL;
+	if (prGlueInfo && prGlueInfo->prAdapter)
+		prGlueInfo->prAdapter->rP2PNetRegState = ENUM_NET_REG_STATE_UNREGISTERED;
 
 	return 0;
 }
@@ -6397,19 +6399,6 @@ int mtk_cfg_change_iface(struct wiphy *wiphy,
 
 	if (type == NL80211_IFTYPE_AP) {
 		/* STA mode change to AP mode */
-		prP2pInfo = prAdapter->prP2pInfo;
-
-		if (prP2pInfo == NULL) {
-			DBGLOG(INIT, ERROR, "prP2pInfo is NULL\n");
-			return -EFAULT;
-		}
-
-		if (prP2pInfo->u4DeviceNum >= KAL_P2P_NUM) {
-			DBGLOG(INIT, ERROR, "resource invalid, u4DeviceNum=%d\n"
-			       , prP2pInfo->u4DeviceNum);
-			return -EFAULT;
-		}
-
 		mtk_uninit_sta_role(prAdapter, ndev);
 
 		if (mtk_init_ap_role(prGlueInfo, ndev) != 0) {
@@ -6442,7 +6431,7 @@ int mtk_cfg_change_iface(struct wiphy *wiphy,
 
 #if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
 int mtk_cfg_add_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr,
 		    struct key_params *params)
 #else
@@ -6454,6 +6443,9 @@ int mtk_cfg_add_key(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6474,7 +6466,7 @@ int mtk_cfg_add_key(struct wiphy *wiphy,
 
 #if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
 int mtk_cfg_get_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr, void *cookie,
 		    void (*callback)(void *cookie, struct key_params *))
 #else
@@ -6486,6 +6478,9 @@ int mtk_cfg_get_key(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6505,7 +6500,7 @@ int mtk_cfg_get_key(struct wiphy *wiphy,
 
 #if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
 int mtk_cfg_del_key(struct wiphy *wiphy,
-		    struct net_device *ndev, int link_id, u8 key_index,
+		    struct wireless_dev *wdev, int link_id, u8 key_index,
 		    bool pairwise, const u8 *mac_addr)
 #else
 int mtk_cfg_del_key(struct wiphy *wiphy,
@@ -6515,6 +6510,9 @@ int mtk_cfg_del_key(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6563,7 +6561,7 @@ int mtk_cfg_set_default_key(struct wiphy *wiphy,
 
 #if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
 int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
-		struct net_device *ndev, int link_id, u8 key_index)
+		struct wireless_dev *wdev, int link_id, u8 key_index)
 #else
 int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
 		struct net_device *ndev, u8 key_index)
@@ -6571,6 +6569,9 @@ int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6586,7 +6587,11 @@ int mtk_cfg_set_default_mgmt_key(struct wiphy *wiphy,
 	return -EFAULT;
 }
 
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_get_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			const u8 *mac, struct station_info *sinfo)
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_get_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			const u8 *mac, struct station_info *sinfo)
@@ -6598,6 +6603,9 @@ int mtk_cfg_get_station(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6614,7 +6622,11 @@ int mtk_cfg_get_station(struct wiphy *wiphy,
 }
 
 #if CFG_SUPPORT_TDLS
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_change_station(struct wiphy *wiphy,
+			   struct wireless_dev *wdev,
+			   const u8 *mac, struct station_parameters *params)
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_change_station(struct wiphy *wiphy,
 			   struct net_device *ndev,
 			   const u8 *mac, struct station_parameters *params)
@@ -6626,6 +6638,9 @@ int mtk_cfg_change_station(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6643,7 +6658,11 @@ int mtk_cfg_change_station(struct wiphy *wiphy,
 					   params);
 }
 
-#if KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_add_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			const u8 *mac, struct station_parameters *params)
+#elif KERNEL_VERSION(3, 16, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_add_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			const u8 *mac, struct station_parameters *params)
@@ -6655,6 +6674,9 @@ int mtk_cfg_add_station(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 
@@ -6750,7 +6772,11 @@ int mtk_cfg_tdls_mgmt(struct wiphy *wiphy,
 }
 #endif /* CFG_SUPPORT_TDLS */
 
-#if KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+int mtk_cfg_del_station(struct wiphy *wiphy,
+			struct wireless_dev *wdev,
+			struct station_del_parameters *params)
+#elif KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE
 int mtk_cfg_del_station(struct wiphy *wiphy,
 			struct net_device *ndev,
 			struct station_del_parameters *params)
@@ -6765,6 +6791,9 @@ int mtk_cfg_del_station(struct wiphy *wiphy,
 {
 	struct GLUE_INFO *prGlueInfo = NULL;
 	uint8_t state = 0;
+#if (KERNEL_VERSION(6, 0, 0) <= CFG80211_VERSION_CODE)
+	struct net_device *ndev = wdev ? wdev->netdev : NULL;
+#endif
 
 	prGlueInfo = (struct GLUE_INFO *) wiphy_priv(wiphy);
 

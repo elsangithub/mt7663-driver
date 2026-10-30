@@ -134,7 +134,10 @@ char *gprifnameap = "";
 module_param_named(sta, gprifnamesta, charp, 0000);
 module_param_named(p2p, gprifnamep2p, charp, 0000);
 module_param_named(ap, gprifnameap, charp, 0000);
-#endif /* CFG_DRIVER_INF_NAME_CHANGE */
+#endif
+int ap_mode = 0;
+module_param(ap_mode, int, 0644);
+MODULE_PARM_DESC(ap_mode, "Enable dedicated AP interface ap0 alongside wlan0"); /* CFG_DRIVER_INF_NAME_CHANGE */
 
 /* NIC interface name */
 #define NIC_INF_NAME    "wlan%d"
@@ -2759,7 +2762,7 @@ static void wlan_late_resume(struct early_suspend *h)
 }
 #endif
 
-#if (CFG_MTK_ANDROID_WMT || WLAN_INCLUDE_PROC)
+#if (CFG_MTK_ANDROID_WMT || WLAN_INCLUDE_PROC || CFG_ENABLE_WIFI_DIRECT)
 
 int set_p2p_mode_handler(struct net_device *netdev,
 			 struct PARAM_CUSTOM_P2P_SET_STRUCT p2pmode)
@@ -3827,7 +3830,7 @@ static int32_t wlanProbe(void *pvData, void *pvDriverData)
 #if (CFG_ENABLE_WIFI_DIRECT && CFG_MTK_ANDROID_WMT)
 		register_set_p2p_mode_handler(set_p2p_mode_handler);
 #elif (CFG_ENABLE_WIFI_DIRECT)
-		if (prAdapter->rWifiVar.u4RegP2pIfAtProbe) {
+		if (ap_mode || prAdapter->rWifiVar.u4RegP2pIfAtProbe) {
 			struct PARAM_CUSTOM_P2P_SET_STRUCT rSetP2P;
 
 			rSetP2P.u4Enable = 1;
