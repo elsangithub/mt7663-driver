@@ -173,13 +173,44 @@ sudo systemctl enable mt7663-hotspot
 ```
 *(Untuk mematikannya kembali dan kembali ke murni Client: `sudo systemctl disable --now mt7663-hotspot`)*
 
-### Menyesuaikan Nama SSID & Sandi Hotspot:
-Ubah konfigurasi pada file `/etc/hostapd/hostapd-mt7663.conf`:
-```ini
-ssid=NAMA_HOTSPOT_ANDA
-wpa_passphrase=SANDI_RAHASIA_ANDA
-```
-Lalu muat ulang: `sudo mt7663-hotspot restart`.
+### Panduan Mengganti Nama SSID, Sandi, & Channel 5 GHz Hotspot:
+
+1. **Buka file konfigurasi hostapd dengan editor nano:**
+   ```bash
+   sudo nano /etc/hostapd/hostapd-mt7663.conf
+   ```
+
+2. **Ubah parameter sesuai kebutuhan Anda:**
+   - **Nama WiFi (SSID):**
+     ```ini
+     ssid=Nama_Hotspot_Baru_Anda
+     ```
+   - **Kata Sandi (Minimal 8 karakter):**
+     ```ini
+     wpa_passphrase=SandiRahasia123
+     ```
+   - **Channel Frekuensi 5 GHz (Bandwidth 80 MHz / VHT80):**
+     ```ini
+     channel=36
+     vht_oper_centr_freq_seg0_idx=42
+     ```
+     > [!TIP]
+     > **Tabel Referensi Channel 5 GHz (80 MHz):**
+     > - **Pita Bawah (UNII-1: Channel 36, 40, 44, atau 48):**
+     >   Gunakan `channel=36` (atau 40/44/48) dan pastikan `vht_oper_centr_freq_seg0_idx=42`.
+     > - **Pita Atas (UNII-3: Channel 149, 153, 157, atau 161):**
+     >   Gunakan `channel=149` (atau 153/157/161) dan ubah menjadi `vht_oper_centr_freq_seg0_idx=155`.
+
+3. **Simpan dan Terapkan:**
+   - Tekan **`Ctrl + O`** lalu **`Enter`** untuk menyimpan, kemudian tekan **`Ctrl + X`** untuk keluar dari nano.
+   - Terapkan perubahan dengan memuat ulang hotspot:
+     ```bash
+     sudo mt7663-hotspot restart
+     ```
+   - Periksa status apakah sudah aktif kembali:
+     ```bash
+     sudo mt7663-hotspot status
+     ```
 
 ---
 

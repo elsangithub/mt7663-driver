@@ -172,13 +172,44 @@ sudo systemctl enable mt7663-hotspot
 ```
 *(To disable: `sudo systemctl disable --now mt7663-hotspot`)*
 
-### Customizing SSID & Password:
-Edit `/etc/hostapd/hostapd-mt7663.conf`:
-```ini
-ssid=YOUR_HOTSPOT_NAME
-wpa_passphrase=YOUR_SECRET_PASSWORD
-```
-Then restart: `sudo mt7663-hotspot restart`.
+### Customizing SSID, Password, & 5 GHz Operating Channel:
+
+1. **Open the configuration file with nano:**
+   ```bash
+   sudo nano /etc/hostapd/hostapd-mt7663.conf
+   ```
+
+2. **Edit parameters as needed:**
+   - **Hotspot Name (SSID):**
+     ```ini
+     ssid=YOUR_NEW_HOTSPOT_NAME
+     ```
+   - **WPA2 Passphrase (minimum 8 characters):**
+     ```ini
+     wpa_passphrase=YourSecretPassword123
+     ```
+   - **5 GHz Operating Channel (80 MHz bandwidth / VHT80):**
+     ```ini
+     channel=36
+     vht_oper_centr_freq_seg0_idx=42
+     ```
+     > [!TIP]
+     > **5 GHz Channel & Center Frequency Reference Table:**
+     > - **Lower Band (UNII-1: Channels 36, 40, 44, or 48):**
+     >   Set `channel=36` (or 40/44/48) and keep `vht_oper_centr_freq_seg0_idx=42`.
+     > - **Upper Band (UNII-3: Channels 149, 153, 157, or 161):**
+     >   Set `channel=149` (or 153/157/161) and update to `vht_oper_centr_freq_seg0_idx=155`.
+
+3. **Save and Apply:**
+   - Press **`Ctrl + O`** then **`Enter`** to save, followed by **`Ctrl + X`** to exit nano.
+   - Restart the hotspot to apply the new configuration:
+     ```bash
+     sudo mt7663-hotspot restart
+     ```
+   - Verify active status:
+     ```bash
+     sudo mt7663-hotspot status
+     ```
 
 ---
 
