@@ -38,6 +38,7 @@ find ${SRC_DIR} -type f \( -name "*.o" -o -name "*.o.d" -o -name "*.cmd" -o -nam
 cp -a system/* ${BUILD_DIR}/
 chmod 644 ${BUILD_DIR}/lib/firmware/*
 chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
+[ -f "${BUILD_DIR}/usr/sbin/mt7663-hotspot" ] && chmod 755 "${BUILD_DIR}/usr/sbin/mt7663-hotspot"
 
 # 3. Copy Debian package control scripts from debian/ directory
 cp -a debian/* ${BUILD_DIR}/DEBIAN/

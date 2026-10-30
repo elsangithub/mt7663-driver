@@ -10,6 +10,8 @@ dkms remove -m mt7663 -v $VERSION --all 2>/dev/null || true
 rm -f /etc/modules-load.d/wlan_mt7663_sdio.conf
 
 if [ -d /run/systemd/system ]; then
+    systemctl stop mt7663-hotspot.service 2>/dev/null || true
+    systemctl disable mt7663-hotspot.service 2>/dev/null || true
     systemctl disable mt7663-shutdown.service 2>/dev/null || true
     systemctl daemon-reload 2>/dev/null || true
 fi

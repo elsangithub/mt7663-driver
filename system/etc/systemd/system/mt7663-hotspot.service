@@ -1,0 +1,14 @@
+[Unit]
+Description=MediaTek MT7663 SoftAP Hotspot Service (ap0)
+After=network.target sys-subsystem-net-devices-ap0.device
+Wants=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/mt7663-hotspot start
+ExecStop=/usr/sbin/mt7663-hotspot stop
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

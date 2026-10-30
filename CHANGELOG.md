@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-10-30
+### Added
+- **Dual-Band 5 GHz 802.11ac SoftAP / Hotspot Mode Support (`ap0`)**: Added high-performance Wi-Fi Hotspot mode operating on a dedicated virtual interface (`ap0`) alongside pure Client (`wlan0`) mode without interference or regression.
+- **Turnkey Hotspot Utility & Service (`mt7663-hotspot`)**: Integrated hotspot CLI tool (`/usr/sbin/mt7663-hotspot`), systemd service (`mt7663-hotspot.service`), and hostapd configuration template (`/etc/hostapd/hostapd-mt7663.conf`) with automatic IP gateway setup, DHCP Option 26 (MTU 1408), and NAT Masquerade packet routing.
+- **NetworkManager AP Isolation (`99-mt7663-unmanaged-ap0.conf`)**: Bundled NetworkManager rule designating `ap0` as unmanaged so NetworkManager leaves AP operations solely to `hostapd` while continuing to manage `wlan0` client mode smoothly.
+
+### Fixed
+- **Linux >= 6.7 cfg80211 Association Kernel Oops**: Updated `kalP2PGOStationUpdate` in `os/linux/gl_p2p_kal.c` to pass `struct wireless_dev *wdev` instead of `net_device` to `cfg80211_new_sta()` and `cfg80211_del_sta()`, resolving kernel crashes upon client station association.
+- **Amlogic SDIO Buffer Overflow & Firmware Assert (`wsys_i #565`)**: Enforced hardware-safe MTU of 1408 (`mtu = 1408`, `max_mtu = 1408`) across all dynamic AP/P2P interfaces in `gl_p2p_cfg80211.c` and `gl_p2p.c`, preventing Ethernet frame overflow on Amlogic Meson G12A (`max_req_size = 1536`).
+- **TX1 Overflow Fast-Path Interrupt Handling**: Added immediate acknowledgement and clearing of `WASR_TX1_OVER_FLOW` in `nic/nic.c` to prevent interrupt storms and maintain stable hardware communication.
+- **P2P Station Flag Error (errno=11)**: Updated `mtk_cfg_change_station` in `os/linux/gl_cfg80211.c` to cleanly return success for AP interfaces, eliminating hostapd station flag failure warnings.
+
 ## [1.0.7] - 2026-10-29
 ### Added
 - **Full Linux Kernel 5.10 LTS Support**: Expanded native compatibility to include Linux Kernel 5.10 LTS (e.g. `5.10.272-ophub`) on FiberHome HG680-FJ.

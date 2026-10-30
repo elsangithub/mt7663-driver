@@ -86,11 +86,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Langkah 3: Unduh & Pasang Paket Debian (.deb)
 ```bash
-# Unduh paket rilis resmi terbaru (v1.0.7)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/mt7663-dkms_1.0.7_all.deb
+# Unduh paket rilis resmi terbaru (v1.0.8)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.8/mt7663-dkms_1.0.8_all.deb
 
 # Pasang paket (DKMS akan otomatis mengompilasi modul untuk kernel aktif dalam ~15-20 detik)
-sudo dpkg -i mt7663-dkms_1.0.7_all.deb
+sudo dpkg -i mt7663-dkms_1.0.8_all.deb
 ```
 
 ### Langkah 4: Muat Driver atau Reboot
@@ -132,6 +132,56 @@ iw dev wlan0 link
 grep -E "CPU|mmc" /proc/interrupts
 ```
 *Interupsi SDIO (`ffe03000.mmc`) akan terdistribusi ke **CPU2/CPU3**, menjaga **CPU0** tetap bebas beban.*
+
+---
+
+## 🔥 Fitur Baru v1.0.8: Mode Hotspot / SoftAP 5 GHz (`ap0`)
+
+Driver versi 1.0.8 menghadirkan antarmuka virtual terisolasi **`ap0`** untuk difungsikan sebagai **Hotspot Wi-Fi 5 GHz berkecepatan tinggi** (802.11ac VHT80) yang meneruskan koneksi internet kabel (`eth0`) ke perangkat nirkabel (smartphone, laptop, dll.).
+
+> [!IMPORTANT]
+> **Zero Regression pada Mode Client (`wlan0`):**
+> - Antarmuka utama **`wlan0` tetap murni dalam mode Client (STA) 100%** dan dikelola oleh NetworkManager.
+> - Antarmuka **`ap0` diatur sebagai unmanaged** (`/etc/NetworkManager/conf.d/99-mt7663-unmanaged-ap0.conf`) sehingga NetworkManager tidak akan menginterupsi hotspot.
+> - **Secara default saat boot, hotspot TIDAK menyala sendiri** kecuali Anda mengaktifkan layanannya. Pengguna yang hanya ingin memakai STB sebagai klien Wi-Fi tidak akan terpengaruh sama sekali.
+
+### Menyalakan Hotspot Secara Instan (Turnkey CLI):
+1. **Pasang paket pendukung**:
+   ```bash
+   sudo apt update && sudo apt install -y hostapd dnsmasq
+   ```
+2. **Jalankan Hotspot**:
+   ```bash
+   sudo mt7663-hotspot start
+   ```
+   *(Hotspot otomatis memancarkan SSID `HG680_5G_VHT80` dengan sandi `password123` di Channel 36 5 GHz, menetapkan IP `192.168.4.1` dengan MTU 1408, dan mengaktifkan NAT Masquerade ke `eth0`).*
+
+3. **Periksa Status & Perangkat yang Terhubung**:
+   ```bash
+   sudo mt7663-hotspot status
+   ```
+
+4. **Menghentikan Hotspot**:
+   ```bash
+   sudo mt7663-hotspot stop
+   ```
+
+### Menjalankan Hotspot Otomatis Saat Boot (Opsional):
+Jika Anda ingin STB otomatis berfungsi sebagai Hotspot setiap kali dinyalakan:
+```bash
+sudo systemctl enable mt7663-hotspot
+```
+*(Untuk mematikannya kembali dan kembali ke murni Client: `sudo systemctl disable --now mt7663-hotspot`)*
+
+### Menyesuaikan Nama SSID & Sandi Hotspot:
+Ubah konfigurasi pada file `/etc/hostapd/hostapd-mt7663.conf`:
+```ini
+ssid=NAMA_HOTSPOT_ANDA
+wpa_passphrase=SANDI_RAHASIA_ANDA
+```
+Lalu muat ulang: `sudo mt7663-hotspot restart`.
+
+---
 
 ---
 

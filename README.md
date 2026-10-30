@@ -86,11 +86,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Step 3: Download & Install the Debian Package (.deb)
 ```bash
-# Download the latest verified release package (v1.0.7)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/mt7663-dkms_1.0.7_all.deb
+# Download the latest verified release package (v1.0.8)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.8/mt7663-dkms_1.0.8_all.deb
 
 # Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.7_all.deb
+sudo dpkg -i mt7663-dkms_1.0.8_all.deb
 ```
 
 ### Step 4: Reboot
@@ -131,6 +131,56 @@ iw dev wlan0 link
 grep -E "CPU|mmc" /proc/interrupts
 ```
 *SDIO interrupts (`ffe03000.mmc`) accumulate heavily on **CPU2/CPU3**, leaving **CPU0** unburdened!*
+
+---
+
+## 🔥 New Feature in v1.0.8: 5 GHz SoftAP / Hotspot Mode (`ap0`)
+
+Driver v1.0.8 introduces a dedicated virtual interface **`ap0`** designed for high-performance **5 GHz 802.11ac VHT80 Wi-Fi Hotspot** functionality, bridging wired Ethernet (`eth0`) to wireless clients (smartphones, laptops, etc.).
+
+> [!IMPORTANT]
+> **Zero Regression on Client Mode (`wlan0`):**
+> - The primary interface **`wlan0` remains 100% pure Client (STA) mode** managed by NetworkManager.
+> - The **`ap0` interface is configured as unmanaged** (`/etc/NetworkManager/conf.d/99-mt7663-unmanaged-ap0.conf`) so NetworkManager never disrupts AP operations.
+> - **Hotspot does NOT auto-start on boot by default** unless explicitly enabled by the user. Users wanting a pure Wi-Fi client experience will experience zero disruption.
+
+### Starting Hotspot Instantly (Turnkey CLI):
+1. **Install runtime dependencies**:
+   ```bash
+   sudo apt update && sudo apt install -y hostapd dnsmasq
+   ```
+2. **Launch Hotspot**:
+   ```bash
+   sudo mt7663-hotspot start
+   ```
+   *(Broadcasts SSID `HG680_5G_VHT80` with password `password123` on Channel 36 5 GHz, sets IP `192.168.4.1` with MTU 1408, and configures NAT Masquerade to `eth0`).*
+
+3. **Check Status & Connected Clients**:
+   ```bash
+   sudo mt7663-hotspot status
+   ```
+
+4. **Stop Hotspot**:
+   ```bash
+   sudo mt7663-hotspot stop
+   ```
+
+### Enabling Hotspot Auto-Start on Boot (Optional):
+To have the STB automatically start the Hotspot upon boot:
+```bash
+sudo systemctl enable mt7663-hotspot
+```
+*(To disable: `sudo systemctl disable --now mt7663-hotspot`)*
+
+### Customizing SSID & Password:
+Edit `/etc/hostapd/hostapd-mt7663.conf`:
+```ini
+ssid=YOUR_HOTSPOT_NAME
+wpa_passphrase=YOUR_SECRET_PASSWORD
+```
+Then restart: `sudo mt7663-hotspot restart`.
+
+---
 
 ---
 
