@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.8-rc2] - 2026-10-31
+## [1.0.8-rc3] - 2026-10-31
 ### Fixed
 - **Hotspot Client Discovery in Status Command**: Enhanced `/usr/sbin/mt7663-hotspot status` to accurately detect, deduplicate, and display connected client stations with their hostname, IP address, MAC, and ARP reachability state by reading active `dnsmasq` DHCP leases and `ip neigh` tables instead of relying on MediaTek's unpopulated `iw dev ap0 station dump`.
-- **Automated Release Notes Pipeline**: Added dedicated script `.github/scripts/extract-changelog.py` to automatically extract exact version release notes from `CHANGELOG.md` into GitHub Releases during automated builds.
+- **Automated Release Notes & Native CLI Pipeline**: Transitioned CI/CD release workflow to native GitHub CLI (`gh release create`) with automated changelog extraction directly from `CHANGELOG.md` for seamless atomic release asset publishing.
 
 ## [1.0.8-rc1] - 2026-10-30
 ### Added
