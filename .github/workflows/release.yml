@@ -27,21 +27,27 @@ jobs:
         id: changelog
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          python3 -c "
-          import re
-          text = open('CHANGELOG.md', encoding='utf-8').read()
-          pattern = r'## \[' + re.escape('${VERSION}') + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
-          m = re.search(pattern, text, re.DOTALL)
-          if not m:
-              base_ver = '${VERSION}'.split('-')[0].split('~')[0]
-              pattern = r'## \[' + re.escape(base_ver) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
+          export VERSION
+          python3 - << 'EOF'
+          import os, re
+          version = os.environ.get('VERSION', '')
+          try:
+              text = open('CHANGELOG.md', encoding='utf-8').read()
+              pattern = r'## \[' + re.escape(version) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
               m = re.search(pattern, text, re.DOTALL)
-          with open('release_notes.md', 'w', encoding='utf-8') as f:
-              if m:
-                  f.write(f'Changes in v{VERSION}:\n\n' + m.group(1).strip() + '\n')
-              else:
-                  f.write(f'Release v{VERSION}\n')
-          "
+              if not m:
+                  base_ver = version.split('-')[0].split('~')[0]
+                  pattern = r'## \[' + re.escape(base_ver) + r'\][^\n]*\n(.*?)(?=\n## \[|\Z)'
+                  m = re.search(pattern, text, re.DOTALL)
+              with open('release_notes.md', 'w', encoding='utf-8') as f:
+                  if m:
+                      f.write(f'Changes in v{version}:\n\n' + m.group(1).strip() + '\n')
+                  else:
+                      f.write(f'Release v{version}\n')
+          except Exception as e:
+              with open('release_notes.md', 'w', encoding='utf-8') as f:
+                  f.write(f'Release v{version}\n')
+          EOF
 
       - name: Publish Release to GitHub
         uses: softprops/action-gh-release@v2
