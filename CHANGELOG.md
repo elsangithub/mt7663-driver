@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.8] - 2026-10-30
+## [1.0.8-rc2] - 2026-10-31
+### Fixed
+- **Hotspot Client Discovery in Status Command**: Enhanced `/usr/sbin/mt7663-hotspot status` to accurately detect, deduplicate, and display connected client stations with their hostname, IP address, MAC, and ARP reachability state by reading active `dnsmasq` DHCP leases and `ip neigh` tables instead of relying on MediaTek's unpopulated `iw dev ap0 station dump`.
+- **Automated Release Notes Pipeline**: Added dedicated script `.github/scripts/extract-changelog.py` to automatically extract exact version release notes from `CHANGELOG.md` into GitHub Releases during automated builds.
+
+## [1.0.8-rc1] - 2026-10-30
 ### Added
 - **Dual-Band 5 GHz 802.11ac SoftAP / Hotspot Mode Support (`ap0`)**: Added high-performance Wi-Fi Hotspot mode operating on a dedicated virtual interface (`ap0`) alongside pure Client (`wlan0`) mode without interference or regression.
 - **Turnkey Hotspot Utility & Service (`mt7663-hotspot`)**: Integrated hotspot CLI tool (`/usr/sbin/mt7663-hotspot`), systemd service (`mt7663-hotspot.service`), and hostapd configuration template (`/etc/hostapd/hostapd-mt7663.conf`) with automatic IP gateway setup, DHCP Option 26 (MTU 1408), and NAT Masquerade packet routing.
