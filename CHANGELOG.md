@@ -5,23 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8-rc5] - 2026-10-31
+
+### Changed
+- **Decoupled Architecture (Pure Kernel DKMS Driver)**:
+  - Decoupled the WSGI Web UI dashboard, Python runtime files, hotspot daemon, and routing scripts out of `mt7663-dkms` into the standalone companion package: [**`mt7663-router-webui`**](https://github.com/elsangithub/mt7663-router-webui).
+  - Reduced `mt7663-dkms` package dependencies strictly to `dkms (>= 2.1.0.0)` and `build-essential`. Zero background daemons, zero external dependencies, and minimal memory footprint.
+- **Modular Kernel Parameter (`ap_mode`)**:
+  - Added kernel module parameter `ap_mode` via `module_param(ap_mode, int, 0644)` in `os/linux/gl_init.c`:
+    - `ap_mode=0` (default): Pure Wi-Fi Client mode (`wlan0` only). Highly stable, lightweight, and ideal for standard desktop/server operations.
+    - `ap_mode=1`: Dynamically instantiates the dedicated virtual interface `ap0` alongside `wlan0` for Dual-Band Concurrent (DBDC) SoftAP Hotspot & Repeater operations when paired with `mt7663-router-webui`.
+
+### Added
+- **Modern Linux 6.7+ & 6.18+ (Ophub) cfg80211 wdev Compatibility**:
+  - Updated `kalP2PGOStationUpdate` in `os/linux/gl_p2p_kal.c` to pass `struct wireless_dev *wdev` to `cfg80211_new_sta()` and `cfg80211_del_sta()` for kernels >= 6.7.0, preventing kernel oops during station association.
+- **WPA2/WPA3 Key Handshake Exception Patch (`wlanoidSetAddKey`)**:
+  - Adjusted key index bitmask in `common/wlan_oid.c` to permit `IS_AUTHENTICATOR` (`BIT(28)`), eliminating key handshake drops during AP encryption setup.
+- **TX1 Overflow Fast-Path Interrupt Recovery**:
+  - Added immediate interrupt acknowledgement for `WASR_TX1_OVER_FLOW` in `nic/nic.c`, preventing SDIO bus stalls and dmesg log floods under heavy bidirectional network saturation.
+- **State Machine Null-Pointer Guards (`ais_fsm.c`)**:
+  - Protected 6 AIS FSM event transitions against null pointer dereference (`prAdapter->prAisBssInfo != NULL`), eliminating kernel panics during rapid interface state transitions.
+
 ## [1.0.8-rc4] - 2026-10-31
 ### Added
-- **All-in-One Turnkey Router Web UI Dashboard (`mt7663-webui`)**:
-  - Integrated zero-dependency Python 3 + `bottle.py` Multi-Threaded WSGI Server (`ThreadingWSGIServer`) listening on port `8080` with minimal memory footprint (~15 MB RAM, 0% CPU idle).
-  - Modern Dark Mode Slate dashboard with 4 distinct real-time overview cards: 5 GHz Hotspot (`ap0`), Wi-Fi Client (`wlan0`), Internet Source (WAN), and System STB Status (cleanly split RAM MB and %, SOC temperature, loadavg, uptime).
-  - Full Administrator Authentication: Protected access with session persistence (`/var/lib/misc/mt7663-sessions.json`) to seamlessly survive service restarts and reboots.
-  - Native Bilingual Interface: English (default) and Bahasa Indonesia with dynamic navigation translation and a unified header dropdown switcher.
-  - Live Bandwidth Accounting: Per-client real-time Upload (UP) and Download (DOWN) traffic monitoring integrated into iptables `HOTSPOT_ACCT` chain.
-  - Persistent Device Cache & In-Table Rename (Alias): Overcomes Android/iOS MAC randomization and missing DHCP Option 12 hostnames (`*`) via `/var/lib/misc/mt7663-devices.json` and a one-click inline edit pencil button (`✏️`).
-  - Hotspot GUI Configurator: Interactive configuration for SSID, Security Mode (WPA2-PSK, WPA2/WPA3 Mixed, WPA3, Open) with eye toggle (`👁️`), Channel Width (20, 40, 80 MHz / VHT80), 5 GHz Channel, Gateway IP, DHCP pool, and DNS Presets (Cloudflare, Google, AdGuard Anti-Ads, Quad9, Custom).
-- **Dual-Band Dual-Concurrent (DBDC) Wireless Repeater Mode**:
-  - Hardware-level concurrency: Simultaneous SoftAP broadcasting (`ap0` on 5 GHz) and upstream Wi-Fi client reception (`wlan0` on 2.4 GHz or 5 GHz) on `#channels <= 2`.
-  - In-dashboard Wi-Fi scanner and connection modal with explicit `ifname wlan0` targeting and 60-second association/DHCP timeout for 100% reliable wireless internet sharing.
-  - Dynamic dual-interface NAT masquerading for both `eth0` and `wlan0`.
-- **Source-Based Policy Routing & Anti-ARP Flapping**:
-  - Automated NetworkManager dispatcher script (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) dynamically managing routing Table 200 with source-based routing for `wlan0`.
-  - Kernel sysctl configuration (`/etc/sysctl.d/99-mt7663.conf`) enforcing `arp_ignore=1`, `arp_announce=2`, and `ip_forward=1`, allowing concurrent, conflict-free access via both `http://192.168.1.9:8080` (eth0) and `http://192.168.1.2:8080` (wlan0) on the same subnet without asymmetric packet drop.
+- **Pre-Decoupling Turnkey Router Web UI Prototype**:
+  - Early monolithic test integrating Python 3 + `bottle.py` Web UI and routing scripts into driver package (subsequently decoupled into standalone `mt7663-router-webui` in rc5).
+  - Dynamic dual-interface NAT masquerading and source-based policy routing testing.
 
 ## [1.0.8-rc3] - 2026-10-31
 ### Fixed
@@ -43,61 +52,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.7] - 2026-10-29
 ### Added
 - **Full Linux Kernel 5.10 LTS Support**: Expanded native compatibility to include Linux Kernel 5.10 LTS (e.g. `5.10.272-ophub`) on FiberHome HG680-FJ.
-- **Universal DTB Collection (`dtbfix/`)**: Bundled pre-compiled Device Tree blobs (`meson-g12a-hg680-fj-uni.dtb`, `fixed.dtb`, `ori.dtb`) to provide seamless 32kHz reference clocking and MicroSD hardware stability across both Kernel 5.10 and Kernel 6.x.
-- **Dynamic Cross-Kernel Toolchain Alignment**: Enhanced `debian/postinst` self-healing logic to conditionally inspect header sources for `symsearch.c`, enabling automatic, zero-intervention `modpost` rebuilding across both Kernel 5.x and Kernel 6.x under Debian 12 Bookworm.
-
-### Fixed
-- **Pre-installation Kernel Guard**: Replaced obsolete Kernel < 6.0 warning in `debian/preinst` with informative guidance directing Kernel 5.x users to the universal DTB.
-- **DTC Audio Routing Escape Bug**: Resolved string-splitting octal escape sequence glitch (`Lineout\x08U2`) in Device Tree compilation, ensuring 100% clean ALSA DAPM routing without `axg-sound-card` warnings in `dmesg`.
-
-## [1.0.6] - 2026-10-29
-### Added
-- **RF Power Calibration Firmware (`TxPwrLimit_MT76x3.dat`)**: Bundled regulatory transmit power calibration tables directly into `/lib/firmware/`, ensuring optimal linear Power Amplifier (PA) operation for 256-QAM (MCS 8/9) without saturation, distortion, or missing firmware errors in `dmesg`.
-- **Automatic Boot Module Loading (`/etc/modules-load.d/wlan_mt7663_sdio.conf`)**: Integrated automatic module configuration into the `.deb` package to ensure `wlan_mt7663_sdio` starts seamlessly on clean OS burns without requiring manual configuration.
-- **Self-Healing Toolchain Alignment**: Integrated runtime detection and instant GCC rebuilding of kernel header host tools (`modpost`) in `postinst` to automatically resolve GLIBC mismatches (e.g. Debian 12 Bookworm GLIBC 2.36 vs Ophub GLIBC 2.38+) without triggering Kbuild `syncconfig` or deleting `autoconf.h`.
-
-### Changed
-- **Comprehensive In-Tree Driver Neutralization**: Enhanced `/etc/modprobe.d/blacklist-mt7663-bluetooth.conf` with `install <module> /bin/true` overrides for all conflicting in-tree drivers (`mt7663s`, `mt76_sdio`, `mt7663_usb_sdio_common`, `mt7615_common`, `mt76_connac_lib`, `mt76`, `btmtksdio`, `btmtk`), completely preventing udev alias race conditions and device lockups on boot across Linux 6.12 and 6.18+.
-- **Unified Packaging Architecture**: Centralized all runtime files and scripts exclusively inside `/root/mt7663-driver` with zero external dependencies.
-
-## [1.0.5] - 2026-10-28
-### Added
-- **Linux 6.18+ Modern Kernel Support**: Added backward/forward compatibility bridge for Linux 6.18+ timer subsystem modernization (`timer_delete_sync()`, `timer_delete()`, and `container_of` from_timer mapping) alongside `FB_EVENT_BLANK` fallback, while maintaining 100% native compatibility with Linux 6.12 LTS.
-- **Pre-installation Kernel Guard (`preinst`)**: Automatically detects running kernel during package installation (`dpkg -i`) and warns if running on Kernel < 6.0, detailing FiberHome HG680-FJ's hardware DTB dependency on `meson-g12-pwm-v2`.
-- **Makefile Kernel Architecture Check**: Emits diagnostic compile-time warning if targeting Kernel < 6.0.
-- **Kernel Focus Realignment**: Shifted project focus and roadmap exclusively to modern 6.x series (Linux 6.12+ LTS & 6.18+ LTS).
-
-### Changed
-- **Silent Production Logging**: Completely silenced all development debug messages (`[scan-start]`, `[scan-set-ch]`, `[wlanoidSetAddKey]`, `[wlan-ack]`, `[wlan-cfg]`, and `[wlan-bufbin]`), eliminating red error text and log spam in `dmesg`.
-- **Clean Kernel Dmesg**: Driver is now whisper-quiet and zero-spam in production kernel environments.
-- **Version Leap**: Skipped v1.0.4 directly to v1.0.5 per project release schedule.
-
-## [1.0.3] - 2026-10-28
-### Added
-- **Native SMP CPU Affinity**: Thread workers `rx_thread` and `hif_thread` in `os/linux/gl_kal.c` dynamically bind to online CPUs excluding CPU0 (`set_cpus_allowed_ptr`), ensuring packet and SDIO bus processing never contend with system timers or OS scheduler on CPU0.
-- **Udev Instant IRQ Mapping**: Replaced external systemd service with instantaneous `99-wlan-performance.rules` udev trigger, dynamically setting `ffe03000.mmc` SDIO IRQ SMP affinity to CPU 2,3 upon network device registration with zero race conditions.
-- **802.11ac High-Throughput Aggregation**: Enabled `AmsduInAmpduTx 1` and `VhtAmsduInAmpduTx 1` in `wifi_mt7661.cfg` to allow multi-MSDU packing per AMPDU over 5GHz radio.
-- **VHT Beamforming & RX Diversity**: Enabled `StaVHTBfee 1` (Explicit VHT Beamformee) and `StbcRx 1` (Space-Time Block Coding) in firmware configuration for enhanced SNR and signal reception from multi-antenna routers.
-- **HIF Processing Loop Expansion**: Doubled `HifTxLoop` to 32 and `OsTxLoop` to 16 for higher batch processing under sustained network load.
-
-### Removed
-- Redundant `wlan-tune.service` systemd unit file (now completely handled natively by udev).
-
-## [1.0.2] - 2026-10-28
-### Added
-- Comprehensive `CHANGELOG.md` for formal semantic version tracking.
-- Coalescing buffer flush clamping to MMC host `max_req_size` (1536B) in `kalDevWriteData` (`os/linux/hif/sdio/sdio.c`).
-- Hard netdev MTU lock to 1408 in `os/linux/gl_init.c` to prevent multi-CMD53 splitting by core MMC under Amlogic G12A SRAM constraints.
-
-### Fixed
-- Fixed `wifi_mt7661.cfg` file permissions to standard read-only 0644.
-- Completely eliminated `WASR_TX1_OVER_FLOW` and host controller FIFO lockups during high-volume bursts.
-
-## [1.0.1] - 2026-10-27
-### Fixed
-- Fixed credit allocation leak in `halTxGetPageCount` (`os/linux/hif/sdio/hal_api.c`).
-- Stabilized SDIO bus polling and interrupt acknowledge routines.
-
-## [1.0.0] - 2026-10-25
-### Added
-- Initial port of MediaTek MT7663/MT7661 driver for Linux 6.12+ (Armbian).

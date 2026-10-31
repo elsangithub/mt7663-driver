@@ -135,142 +135,48 @@ grep -E "CPU|mmc" /proc/interrupts
 
 ---
 
-## 🌐 Dashboard Web UI Router All-in-One & Manajemen Hotspot
+## 📡 Dukungan SoftAP / Hotspot & Parameter Modular `ap_mode`
 
-Mulai rilis **v1.0.8**, paket `mt7663-dkms` telah dilengkapi dengan antarmuka web manajemen router (*Router Dashboard*) berbasis port **`8080`** yang sangat ringan, modern, dan mandiri tanpa ketergantungan software berat (*zero-dependency*).
+Mulai dari **v1.0.8**, driver kernel `wlan_mt7663_sdio` memperkenalkan dukungan modular **Dual-Band Concurrent (DBDC)** dengan antarmuka virtual independen **`ap0`**.
+
+### Parameter Modul Kernel `ap_mode`:
+Driver menyediakan parameter kernel yang dapat dikonfigurasi melalui `/etc/modprobe.d/`:
+* **`ap_mode=0` (Bawaan / Default)**:
+  * Mode Wi-Fi Klien murni (`wlan0` saja).
+  * Penggunaan RAM minimal, tanpa antarmuka virtual tambahan, nol beban background service. Sangat ideal untuk penggunaan desktop atau server standar.
+* **`ap_mode=1`**:
+  * Mode Antarmuka Ganda: Menginisialisasi antarmuka virtual **`ap0`** secara simultan bersama **`wlan0`**.
+  * Mengaktifkan kemampuan pemancaran hotspot SoftAP **5 GHz 802.11ac VHT80 (866 Mbps)** atau **2.4 GHz (HT40)** sembari tetap mempertahankan konektivitas klien pada `wlan0`.
+
+Cara mengaktifkan mode antarmuka ganda secara manual di driver:
+```bash
+echo "options wlan_mt7663_sdio ap_mode=1" | sudo tee /etc/modprobe.d/wlan_mt7663_sdio.conf
+sudo reboot
+```
+
+---
+
+## 🌐 Paket Pelengkap Resmi: Web UI Router & Hotspot Manager (`mt7663-router-webui`)
+
+Agar repositori driver kernel ini tetap ramping, ringan, dan murni berfokus pada dukungan perangkat keras DKMS tingkat kernel, seluruh antarmuka web manajemen, orkestrasi DHCP/DNS, dan otomasi routing telah dipisahkan ke repositori pendamping resmi:
+
+👉 [**`mt7663-router-webui` (Repositori GitHub)**](https://github.com/elsangithub/mt7663-router-webui)
 
 <div align="center">
-  <h3>⚡ MT7663 Router Management Dashboard</h3>
-  <p><i>Ubah TV Box FiberHome HG680-FJ Anda menjadi Router Portabel & Wi-Fi Repeater Canggih!</i></p>
+  <img src="https://raw.githubusercontent.com/elsangithub/mt7663-router-webui/main/docs/screenshots/01-overview.png" alt="MT7663 Router Dashboard" width="850">
 </div>
 
-### 🔑 Fitur Utama Web UI:
-- **Mesin Multi-Threaded WSGI Cepat**: Dibangun menggunakan Python 3 + `bottle.py` WSGI (`ThreadingWSGIServer`). Mengonsumsi RAM di bawah 15 MB, 0% CPU saat santai (*idle*), dan mampu melayani banyak tab/perangkat secara bersamaan tanpa antrean (*non-blocking*).
-- **4 Kartu Ringkasan Real-Time**:
-  1. 📡 **Hotspot 5 GHz (`ap0`)**: Memantau SSID, Lebar Pita (20/40/80 MHz VHT80), Kanal, Mode Keamanan, IP Gateway, dan jumlah klien terhubung.
-  2. 📶 **Klien Wi-Fi (`wlan0`)**: Status koneksi, SSID yang terhubung, persentase kekuatan sinyal, dan alamat IP penerima.
-  3. 🌐 **Sumber Internet (WAN)**: Deteksi otomatis jalur internet aktif (`eth0` Kabel LAN atau `wlan0` Penangkap Wi-Fi) lengkap dengan status NAT Masquerade.
-  4. ⚡ **Kondisi STB**: Rilis kernel, suhu SOC chipset, CPU Load, persentase dan pemakaian RAM dalam 2 baris terpisah (MB & %), serta *uptime* sistem.
-- **Mode Wireless Repeater (STA + SoftAP Bersamaan)**: Anda dapat memindai Wi-Fi sekitar langsung dari browser, lalu menghubungkan STB ke Wi-Fi rumah dengan 1 klik, sementara Hotspot 5 GHz di `ap0` tetap memancarkan sinyal secara bersamaan!
-- **Pemantauan Kuota & Trafik Real-Time**: Tabel perangkat menampilkan pemantauan lalu lintas data **Unggah (UP)** dan **Unduh (DOWN)** secara langsung untuk setiap perangkat yang tersambung via *iptables accounting*.
-- **Pemberian Nama Perangkat Permanen (`✏️`)**: Mengatasi masalah MAC Address acak pada Android/iOS melalui database `/var/lib/misc/mt7663-devices.json`. Cukup klik ikon pensil di samping nama perangkat untuk memberi nama panggilan khusus (misal: "HP Saya", "Laptop Kerja").
-- **Keamanan Login Administrator**: Dilindungi autentikasi login (bawaan: `admin` / `admin`, dapat diubah di menu) dengan sistem persistensi sesi `/var/lib/misc/mt7663-sessions.json` yang tidak akan ter-logout saat service direstart.
-- **Preset DNS Server Cepat**: Ganti DNS Hotspot dalam 1 klik: Cloudflare (`1.1.1.1`), Google (`8.8.8.8`), AdGuard Anti-Iklan (`94.140.14.14`), Quad9 (`9.9.9.9`), atau Custom DNS.
-- **Dukungan Dwibahasa Penuh**: Bebas berganti antara **🇬🇧 English** (bawaan) dan **🇮🇩 Bahasa Indonesia** melalui dropdown di pojok kanan atas.
-
----
-
-### 💻 Cara Mengakses Web UI:
-
-| Jalur Akses | Alamat URL | Keterangan |
-| :--- | :--- | :--- |
-| **Dari PC via Kabel LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Alamat IP bawaan STB di jaringan rumah Anda. |
-| **Dari HP di Hotspot STB (`ap0`)** | **`http://10.10.10.1:8080`** | Alamat Gateway saat HP tersambung ke Wi-Fi `HG680_5G_VHT80`. |
-| **Dari PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | Alamat IP `wlan0` saat STB tersambung ke Wi-Fi rumah. |
-
-> [!TIP]
-> **Source-Based Policy Routing (Tabel 200)**:
-> Berkat script dispatcher otomatis (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) dan tuning kernel sysctl (`arp_ignore=1`, `arp_announce=2`), Anda dapat membuka **KEDUA ALAMAT SEKALIGUS** (`http://192.168.1.9:8080` dan `http://192.168.1.2:8080`) dari browser PC tanpa bentrok atau macet!
-
----
-
-### 🛠️ Perintah Terminal & Manajemen Service:
+### Fitur yang disediakan oleh `mt7663-router-webui`:
+* **Dashboard Web WSGI Zero-Dependency**: Web UI Python 3 bawaan pada port `8080` (konsumsi RAM < 25 MB).
+* **Telemetri Perangkat Keras Live**: Suhu SoC Amlogic, beban CPU, rincian RAM, dan pemantauan bandwidth unggah/unduh per perangkat.
+* **Pengelola Hotspot & Wi-Fi Klien Turnkey**: Pemindai Wi-Fi satu klik, konfigurator hotspot interaktif (SSID, WPA2/WPA3, 20/40/80 MHz, preset DNS).
+* **Mode Wireless Repeater DBDC Ganda**: Integrasi otomatis NetworkManager dispatcher dan iptables NAT masquerade untuk penyebaran internet tanpa jeda.
+* **Bilingual Penuh**: Beralih instan antara Bahasa Indonesia dan Bahasa Inggris.
 
 ```bash
-# Manajemen Layanan Web UI
-sudo systemctl status mt7663-webui
-sudo systemctl restart mt7663-webui
-
-# Manajemen Layanan Hotspot
-sudo systemctl status mt7663-hotspot
-sudo systemctl restart mt7663-hotspot
-
-# Perintah Manual CLI Hotspot
-sudo mt7663-hotspot start    # Menyalakan Hotspot 5GHz di ap0
-sudo mt7663-hotspot stop     # Mematikan Hotspot dan mengembalikan iptables
-sudo mt7663-hotspot status   # Melihat status dan daftar perangkat terhubung
+# Untuk memasang paket Web UI & Pengelola Hotspot di atas driver ini:
+sudo apt install ./mt7663-router-webui_1.0.1_all.deb
 ```
-
----
-
-## 🔥 Fitur Baru v1.0.8: Mode Hotspot / SoftAP 5 GHz (`ap0`)
-
-Driver versi 1.0.8 menghadirkan antarmuka virtual terisolasi **`ap0`** untuk difungsikan sebagai **Hotspot Wi-Fi 5 GHz berkecepatan tinggi** (802.11ac VHT80) yang meneruskan koneksi internet kabel (`eth0`) ke perangkat nirkabel (smartphone, laptop, dll.).
-
-> [!IMPORTANT]
-> **Zero Regression pada Mode Client (`wlan0`):**
-> - Antarmuka utama **`wlan0` tetap murni dalam mode Client (STA) 100%** dan dikelola oleh NetworkManager.
-> - Antarmuka **`ap0` diatur sebagai unmanaged** (`/etc/NetworkManager/conf.d/99-mt7663-unmanaged-ap0.conf`) sehingga NetworkManager tidak akan menginterupsi hotspot.
-> - **Secara default saat boot, hotspot TIDAK menyala sendiri** kecuali Anda mengaktifkan layanannya. Pengguna yang hanya ingin memakai STB sebagai klien Wi-Fi tidak akan terpengaruh sama sekali.
-
-### Menyalakan Hotspot Secara Instan (Turnkey CLI):
-1. **Pasang paket pendukung**:
-   ```bash
-   sudo apt update && sudo apt install -y hostapd dnsmasq
-   ```
-2. **Jalankan Hotspot**:
-   ```bash
-   sudo mt7663-hotspot start
-   ```
-   *(Hotspot otomatis memancarkan SSID `HG680_5G_VHT80` dengan sandi `password123` di Channel 36 5 GHz, menetapkan IP `10.10.10.1` dengan MTU 1408, dan mengaktifkan NAT Masquerade ke `eth0`).*
-
-3. **Periksa Status & Perangkat yang Terhubung**:
-   ```bash
-   sudo mt7663-hotspot status
-   ```
-
-4. **Menghentikan Hotspot**:
-   ```bash
-   sudo mt7663-hotspot stop
-   ```
-
-### Menjalankan Hotspot Otomatis Saat Boot (Opsional):
-Jika Anda ingin STB otomatis berfungsi sebagai Hotspot setiap kali dinyalakan:
-```bash
-sudo systemctl enable mt7663-hotspot
-```
-*(Untuk mematikannya kembali dan kembali ke murni Client: `sudo systemctl disable --now mt7663-hotspot`)*
-
-### Panduan Mengganti Nama SSID, Sandi, & Channel 5 GHz Hotspot:
-
-1. **Buka file konfigurasi hostapd dengan editor nano:**
-   ```bash
-   sudo nano /etc/hostapd/hostapd-mt7663.conf
-   ```
-
-2. **Ubah parameter sesuai kebutuhan Anda:**
-   - **Nama WiFi (SSID):**
-     ```ini
-     ssid=Nama_Hotspot_Baru_Anda
-     ```
-   - **Kata Sandi (Minimal 8 karakter):**
-     ```ini
-     wpa_passphrase=SandiRahasia123
-     ```
-   - **Channel Frekuensi 5 GHz (Bandwidth 80 MHz / VHT80):**
-     ```ini
-     channel=36
-     vht_oper_centr_freq_seg0_idx=42
-     ```
-     > [!TIP]
-     > **Tabel Referensi Channel 5 GHz (80 MHz):**
-     > - **Pita Bawah (UNII-1: Channel 36, 40, 44, atau 48):**
-     >   Gunakan `channel=36` (atau 40/44/48) dan pastikan `vht_oper_centr_freq_seg0_idx=42`.
-     > - **Pita Atas (UNII-3: Channel 149, 153, 157, atau 161):**
-     >   Gunakan `channel=149` (atau 153/157/161) dan ubah menjadi `vht_oper_centr_freq_seg0_idx=155`.
-
-3. **Simpan dan Terapkan:**
-   - Tekan **`Ctrl + O`** lalu **`Enter`** untuk menyimpan, kemudian tekan **`Ctrl + X`** untuk keluar dari nano.
-   - Terapkan perubahan dengan memuat ulang hotspot:
-     ```bash
-     sudo mt7663-hotspot restart
-     ```
-   - Periksa status apakah sudah aktif kembali:
-     ```bash
-     sudo mt7663-hotspot status
-     ```
-
----
 
 ---
 

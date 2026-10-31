@@ -134,141 +134,48 @@ grep -E "CPU|mmc" /proc/interrupts
 
 ---
 
-## 🌐 All-in-One Turnkey Router Web UI Dashboard & Hotspot Manager
+## 📡 SoftAP / Hotspot Support & Modular `ap_mode` Parameter
 
-Starting in **v1.0.8**, `mt7663-dkms` includes a built-in, lightweight, zero-dependency Web UI Router Dashboard (`mt7663-webui`) listening on port **`8080`**.
+Starting in **v1.0.8**, the `wlan_mt7663_sdio` kernel driver introduces modular **Dual-Band Concurrent (DBDC)** support with an independent virtual interface **`ap0`**.
+
+### The `ap_mode` Module Parameter:
+The driver exposes a runtime module parameter configurable via `/etc/modprobe.d/`:
+* **`ap_mode=0` (Default)**:
+  * Pure Wi-Fi Client mode (`wlan0` only).
+  * Minimum memory footprint, zero extra virtual interfaces, zero background overhead. Perfect for desktop or standard server use.
+* **`ap_mode=1`**:
+  * Dual-Interface Mode: Initializes **`ap0`** alongside **`wlan0`**.
+  * Enables high-performance **5 GHz 802.11ac VHT80 (866 Mbps)** or **2.4 GHz (HT40)** SoftAP hotspot broadcasting while maintaining simultaneous client connectivity on `wlan0`.
+
+To enable dual-interface mode manually in the driver:
+```bash
+echo "options wlan_mt7663_sdio ap_mode=1" | sudo tee /etc/modprobe.d/wlan_mt7663_sdio.conf
+sudo reboot
+```
+
+---
+
+## 🌐 Official Web Management & Turnkey Hotspot Add-On: `mt7663-router-webui`
+
+To keep this kernel driver lean, lightweight, and strictly focused on core DKMS hardware support, all Web UI management, DNS/DHCP orchestration, and automated routing have been decoupled into the official standalone companion package:
+
+👉 [**`mt7663-router-webui` (GitHub Repository)**](https://github.com/elsangithub/mt7663-router-webui)
 
 <div align="center">
-  <h3>⚡ MT7663 Modern Dark-Mode Router Dashboard</h3>
-  <p><i>Turn your FiberHome HG680-FJ TV Box into an enterprise-grade portable router & wireless repeater!</i></p>
+  <img src="https://raw.githubusercontent.com/elsangithub/mt7663-router-webui/main/docs/screenshots/01-overview.png" alt="MT7663 Router Dashboard" width="850">
 </div>
 
-### 🔑 Key Features of the Web UI:
-- **Zero-Dependency Multi-Threaded Engine**: Built on Python 3 + `bottle.py` WSGI (`ThreadingWSGIServer`). Consumes under 15 MB RAM, 0% CPU idle, handles simultaneous multi-client access without queueing or blocking.
-- **4 Real-Time Overview Cards**:
-  1. 📡 **5 GHz Hotspot (`ap0`)**: SSID, Channel Width (20/40/80 MHz), Channel, Security Mode, Gateway IP, and active client count.
-  2. 📶 **Wi-Fi Client (`wlan0`)**: Live connection state, connected SSID, signal strength percentage, and IP address.
-  3. 🌐 **Internet Source (WAN)**: Automatic detection of the active upstream route (`eth0` Ethernet or `wlan0` Wi-Fi Repeater) and NAT Masquerade state.
-  4. ⚡ **STB Status**: Kernel release, SOC temperature, CPU load, cleanly split RAM usage (MB & %), and system uptime.
-- **Wireless Repeater Mode (STA + SoftAP Concurrency)**: Scan nearby Wi-Fi networks in the dashboard and connect `wlan0` to your home router with one click while `ap0` continues broadcasting 5 GHz Wi-Fi simultaneously!
-- **Real-Time Client Bandwidth Tracking**: Connected Devices table monitors live **Upload (UP)** and **Download (DOWN)** byte consumption per client directly from iptables traffic accounting.
-- **Persistent Device Aliasing (`✏️`)**: Overcomes Android/iOS MAC randomization by caching friendly names permanently in `/var/lib/misc/mt7663-devices.json`. Click the pencil icon next to any device to assign a custom nickname.
-- **Administrator Security Authentication**: Protected login (`admin` / `admin` default, customizable) with session persistence surviving service restarts and reboots.
-- **DNS Server Presets**: Switch hotspot DHCP DNS with one click between Cloudflare (`1.1.1.1`), Google (`8.8.8.8`), AdGuard Anti-Ads (`94.140.14.14`), Quad9 (`9.9.9.9`), or Custom DNS.
-- **Native Bilingual Support**: Toggle seamlessly between **🇬🇧 English** (default) and **🇮🇩 Bahasa Indonesia**.
-
----
-
-### 💻 Accessing the Web UI:
-
-| Access Method | URL | Description |
-| :--- | :--- | :--- |
-| **From PC via Wired LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Default static/DHCP IP of the STB on your home network. |
-| **From Devices on Hotspot (`ap0`)** | **`http://10.10.10.1:8080`** | Gateway IP for smartphones/laptops connected to `HG680_5G_VHT80`. |
-| **From PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | IP assigned to `wlan0` when connected to your home router. |
-
-> [!TIP]
-> **Source-Based Policy Routing (Table 200)**:
-> Thanks to our automated NetworkManager dispatcher script (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) and kernel sysctl tuning (`arp_ignore=1`, `arp_announce=2`), you can access **BOTH** `http://192.168.1.9:8080` AND `http://192.168.1.2:8080` concurrently from your PC without asymmetric packet drops!
-
----
-
-### 🛠️ CLI & Systemd Service Management:
+### Features provided by `mt7663-router-webui`:
+* **Zero-Dependency WSGI Router Dashboard**: Embedded Python 3 Web UI running on port `8080` (< 25 MB RAM).
+* **Live Hardware Telemetry**: Real-time Amlogic SoC temperature, CPU load, RAM breakdown, and per-device TX/RX bandwidth.
+* **Turnkey SoftAP & Client Manager**: One-click Wi-Fi scanner, interactive hotspot configurator (SSID, WPA2/WPA3, 20/40/80 MHz, DNS presets).
+* **Dual-Band Wireless Repeater (DBDC)**: Automated NetworkManager dispatcher and iptables NAT masquerade for seamless wireless internet repetition.
+* **Bilingual Support**: Instant toggle between English and Bahasa Indonesia.
 
 ```bash
-# Web UI Service Management
-sudo systemctl status mt7663-webui
-sudo systemctl restart mt7663-webui
-
-# Hotspot Service Management
-sudo systemctl status mt7663-hotspot
-sudo systemctl restart mt7663-hotspot
-
-# Manual CLI Hotspot Controls
-sudo mt7663-hotspot start    # Start 5GHz AP on ap0
-sudo mt7663-hotspot stop     # Stop AP and restore rules
-sudo mt7663-hotspot status   # Display active status & connected clients
+# To install the Web UI & Hotspot Manager on top of this driver:
+sudo apt install ./mt7663-router-webui_1.0.1_all.deb
 ```
-
----
-## 🔥 New Feature in v1.0.8: 5 GHz SoftAP / Hotspot Mode (`ap0`)
-
-Driver v1.0.8 introduces a dedicated virtual interface **`ap0`** designed for high-performance **5 GHz 802.11ac VHT80 Wi-Fi Hotspot** functionality, bridging wired Ethernet (`eth0`) to wireless clients (smartphones, laptops, etc.).
-
-> [!IMPORTANT]
-> **Zero Regression on Client Mode (`wlan0`):**
-> - The primary interface **`wlan0` remains 100% pure Client (STA) mode** managed by NetworkManager.
-> - The **`ap0` interface is configured as unmanaged** (`/etc/NetworkManager/conf.d/99-mt7663-unmanaged-ap0.conf`) so NetworkManager never disrupts AP operations.
-> - **Hotspot does NOT auto-start on boot by default** unless explicitly enabled by the user. Users wanting a pure Wi-Fi client experience will experience zero disruption.
-
-### Starting Hotspot Instantly (Turnkey CLI):
-1. **Install runtime dependencies**:
-   ```bash
-   sudo apt update && sudo apt install -y hostapd dnsmasq
-   ```
-2. **Launch Hotspot**:
-   ```bash
-   sudo mt7663-hotspot start
-   ```
-   *(Broadcasts SSID `HG680_5G_VHT80` with password `password123` on Channel 36 5 GHz, sets IP `10.10.10.1` with MTU 1408, and configures NAT Masquerade to `eth0`).*
-
-3. **Check Status & Connected Clients**:
-   ```bash
-   sudo mt7663-hotspot status
-   ```
-
-4. **Stop Hotspot**:
-   ```bash
-   sudo mt7663-hotspot stop
-   ```
-
-### Enabling Hotspot Auto-Start on Boot (Optional):
-To have the STB automatically start the Hotspot upon boot:
-```bash
-sudo systemctl enable mt7663-hotspot
-```
-*(To disable: `sudo systemctl disable --now mt7663-hotspot`)*
-
-### Customizing SSID, Password, & 5 GHz Operating Channel:
-
-1. **Open the configuration file with nano:**
-   ```bash
-   sudo nano /etc/hostapd/hostapd-mt7663.conf
-   ```
-
-2. **Edit parameters as needed:**
-   - **Hotspot Name (SSID):**
-     ```ini
-     ssid=YOUR_NEW_HOTSPOT_NAME
-     ```
-   - **WPA2 Passphrase (minimum 8 characters):**
-     ```ini
-     wpa_passphrase=YourSecretPassword123
-     ```
-   - **5 GHz Operating Channel (80 MHz bandwidth / VHT80):**
-     ```ini
-     channel=36
-     vht_oper_centr_freq_seg0_idx=42
-     ```
-     > [!TIP]
-     > **5 GHz Channel & Center Frequency Reference Table:**
-     > - **Lower Band (UNII-1: Channels 36, 40, 44, or 48):**
-     >   Set `channel=36` (or 40/44/48) and keep `vht_oper_centr_freq_seg0_idx=42`.
-     > - **Upper Band (UNII-3: Channels 149, 153, 157, or 161):**
-     >   Set `channel=149` (or 153/157/161) and update to `vht_oper_centr_freq_seg0_idx=155`.
-
-3. **Save and Apply:**
-   - Press **`Ctrl + O`** then **`Enter`** to save, followed by **`Ctrl + X`** to exit nano.
-   - Restart the hotspot to apply the new configuration:
-     ```bash
-     sudo mt7663-hotspot restart
-     ```
-   - Verify active status:
-     ```bash
-     sudo mt7663-hotspot status
-     ```
-
----
 
 ---
 
