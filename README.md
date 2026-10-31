@@ -164,7 +164,7 @@ Starting in **v1.0.8**, `mt7663-dkms` includes a built-in, lightweight, zero-dep
 | Access Method | URL | Description |
 | :--- | :--- | :--- |
 | **From PC via Wired LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Default static/DHCP IP of the STB on your home network. |
-| **From Devices on Hotspot (`ap0`)** | **`http://192.168.4.1:8080`** | Gateway IP for smartphones/laptops connected to `HG680_5G_VHT80`. |
+| **From Devices on Hotspot (`ap0`)** | **`http://10.10.10.1:8080`** | Gateway IP for smartphones/laptops connected to `HG680_5G_VHT80`. |
 | **From PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | IP assigned to `wlan0` when connected to your home router. |
 
 > [!TIP]
@@ -210,7 +210,7 @@ Driver v1.0.8 introduces a dedicated virtual interface **`ap0`** designed for hi
    ```bash
    sudo mt7663-hotspot start
    ```
-   *(Broadcasts SSID `HG680_5G_VHT80` with password `password123` on Channel 36 5 GHz, sets IP `192.168.4.1` with MTU 1408, and configures NAT Masquerade to `eth0`).*
+   *(Broadcasts SSID `HG680_5G_VHT80` with password `password123` on Channel 36 5 GHz, sets IP `10.10.10.1` with MTU 1408, and configures NAT Masquerade to `eth0`).*
 
 3. **Check Status & Connected Clients**:
    ```bash

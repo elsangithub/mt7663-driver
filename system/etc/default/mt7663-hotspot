@@ -2,7 +2,7 @@
 # FiberHome HG680-FJ (Amlogic S905X2 / Meson G12A)
 
 # Gateway IP address and Subnet CIDR
-AP_GATEWAY="192.168.4.1"
+AP_GATEWAY="10.10.10.1"
 AP_NETMASK="255.255.255.0"
 AP_CIDR="24"
 

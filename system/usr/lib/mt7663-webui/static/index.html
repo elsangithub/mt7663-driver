@@ -335,7 +335,7 @@
           <div class="form-row">
             <div class="form-group">
               <label id="lbl-hs-gateway">Gateway IP (Network Segment)</label>
-              <input type="text" id="hs-gateway" required placeholder="192.168.4.1">
+              <input type="text" id="hs-gateway" required placeholder="10.10.10.1">
               <div class="hint" id="hint-hs-gw">Subnet IP (e.g. 192.168.4.1, 10.10.10.1).</div>
             </div>
             <div class="form-group">
@@ -1056,7 +1056,7 @@
         onBandChange();
         document.getElementById('hs-chan').value = data.channel || (hsBand === '2.4' ? 6 : 36);
         document.getElementById('hs-width').value = data.width || (hsBand === '2.4' ? 40 : 80);
-        document.getElementById('hs-gateway').value = data.gateway || '192.168.4.1';
+        document.getElementById('hs-gateway').value = data.gateway || '10.10.10.1';
         document.getElementById('hs-dhcp-start').value = data.dhcp_start || 10;
         document.getElementById('hs-dhcp-end').value = data.dhcp_end || 100;
         document.getElementById('hs-dns').value = data.dns_servers || '1.1.1.1,8.8.8.8';

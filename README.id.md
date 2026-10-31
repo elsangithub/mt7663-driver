@@ -165,7 +165,7 @@ Mulai rilis **v1.0.8**, paket `mt7663-dkms` telah dilengkapi dengan antarmuka we
 | Jalur Akses | Alamat URL | Keterangan |
 | :--- | :--- | :--- |
 | **Dari PC via Kabel LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Alamat IP bawaan STB di jaringan rumah Anda. |
-| **Dari HP di Hotspot STB (`ap0`)** | **`http://192.168.4.1:8080`** | Alamat Gateway saat HP tersambung ke Wi-Fi `HG680_5G_VHT80`. |
+| **Dari HP di Hotspot STB (`ap0`)** | **`http://10.10.10.1:8080`** | Alamat Gateway saat HP tersambung ke Wi-Fi `HG680_5G_VHT80`. |
 | **Dari PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | Alamat IP `wlan0` saat STB tersambung ke Wi-Fi rumah. |
 
 > [!TIP]
@@ -212,7 +212,7 @@ Driver versi 1.0.8 menghadirkan antarmuka virtual terisolasi **`ap0`** untuk dif
    ```bash
    sudo mt7663-hotspot start
    ```
-   *(Hotspot otomatis memancarkan SSID `HG680_5G_VHT80` dengan sandi `password123` di Channel 36 5 GHz, menetapkan IP `192.168.4.1` dengan MTU 1408, dan mengaktifkan NAT Masquerade ke `eth0`).*
+   *(Hotspot otomatis memancarkan SSID `HG680_5G_VHT80` dengan sandi `password123` di Channel 36 5 GHz, menetapkan IP `10.10.10.1` dengan MTU 1408, dan mengaktifkan NAT Masquerade ke `eth0`).*
 
 3. **Periksa Status & Perangkat yang Terhubung**:
    ```bash

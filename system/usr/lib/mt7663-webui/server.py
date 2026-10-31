@@ -249,7 +249,7 @@ def read_hostapd_config():
 
 def read_default_config():
     config = {
-        "gateway": "192.168.4.1",
+        "gateway": "10.10.10.1",
         "netmask": "255.255.255.0",
         "cidr": "24",
         "dhcp_start": 10,
@@ -728,7 +728,7 @@ def api_save_hotspot_config():
         width = int(data.get("width", 40 if band == "2.4" else 80))
     except ValueError:
         width = 40 if band == "2.4" else 80
-    gateway = str(data.get("gateway", "192.168.4.1")).strip()
+    gateway = str(data.get("gateway", "10.10.10.1")).strip()
     try:
         dhcp_start = int(data.get("dhcp_start", 10))
         dhcp_end = int(data.get("dhcp_end", 100))
