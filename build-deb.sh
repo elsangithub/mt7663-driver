@@ -2,23 +2,9 @@
 set -e
 
 PACKAGE=mt7663-dkms
-# Otomatis deteksi versi dari dkms.conf sebagai Single Source of Truth
 DEFAULT_VERSION=$(grep -E "^[[:space:]]*PACKAGE_VERSION=" dkms.conf 2>/dev/null | cut -d'"' -f2)
-VERSION=${1:-${DEFAULT_VERSION:-1.0.7}}
+VERSION=${1:-${DEFAULT_VERSION:-1.0.8-rc5}}
 TARGET_DEB="${PACKAGE}_${VERSION}_all.deb"
-
-# Proteksi Version Lock: Mencegah rebuild pada versi yang sudah dirilis/dikunci
-if [ "$FORCE_REBUILD" != "1" ] && [ -f "$TARGET_DEB" ]; then
-    if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null 2>&1; then
-        echo "======================================================================="
-        echo "  [VERSION LOCKED] Rilis v${VERSION} (${TARGET_DEB}) sudah dikunci!"
-        echo "  Versi yang sudah dirilis resmi tidak boleh di-build ulang sembarangan."
-        echo "  Silakan naikkan versi (bump version) untuk membuat rilis baru."
-        echo "  (Gunakan FORCE_REBUILD=1 ./build-deb.sh jika sengaja ingin menimpa)"
-        echo "======================================================================="
-        exit 0
-    fi
-fi
 
 BUILD_DIR=/tmp/${PACKAGE}_build
 SRC_DIR=${BUILD_DIR}/usr/src/mt7663-${VERSION}
@@ -29,26 +15,20 @@ rm -rf ${BUILD_DIR}
 mkdir -p ${SRC_DIR}
 mkdir -p ${BUILD_DIR}/DEBIAN
 
-# 1. Copy pure driver source code directly to /usr/src/mt7663-${VERSION} (no junk)
+# 1. Copy pure driver source code directly
 cp -a chips common include mgmt nic os prealloc Makefile Kconfig dkms.conf CHANGELOG.md README.md ${SRC_DIR}/
-sed -i "s/PACKAGE_VERSION=\".*\"/PACKAGE_VERSION=\"${VERSION}\"/" ${SRC_DIR}/dkms.conf
+sed -i "s/PACKAGE_VERSION=".*"/PACKAGE_VERSION="${VERSION}"/" ${SRC_DIR}/dkms.conf
 find ${SRC_DIR} -type f \( -name "*.o" -o -name "*.o.d" -o -name "*.cmd" -o -name "*.ko" -o -name "*.mod*" \) -delete
-find ${BUILD_DIR} -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-find ${BUILD_DIR} -name "*.pyc" -delete 2>/dev/null || true
 
-# 2. Copy ALL system integration files at once from unified system/ directory
+# 2. Copy system integration files (firmware, udev, sysctl, blacklist)
 cp -a system/* ${BUILD_DIR}/
 chmod 644 ${BUILD_DIR}/lib/firmware/*
 chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
-[ -f "${BUILD_DIR}/usr/sbin/mt7663-hotspot" ] && chmod 755 "${BUILD_DIR}/usr/sbin/mt7663-hotspot"
-[ -f "${BUILD_DIR}/usr/lib/mt7663-webui/server.py" ] && chmod 755 "${BUILD_DIR}/usr/lib/mt7663-webui/server.py"
-[ -f "${BUILD_DIR}/etc/update-motd.d/15-ap-info" ] && chmod 755 "${BUILD_DIR}/etc/update-motd.d/15-ap-info"
-[ -f "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh" ] && chmod 755 "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh"
 
-# 3. Copy Debian package control scripts from debian/ directory
+# 3. Copy Debian package control scripts
 cp -a debian/* ${BUILD_DIR}/DEBIAN/
 sed -i "s/^Version:.*/Version: ${VERSION}/" ${BUILD_DIR}/DEBIAN/control
-sed -i "s/VERSION=\".*\"/VERSION=\"${VERSION}\"/" ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
+sed -i "s/VERSION=".*"/VERSION="${VERSION}"/" ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 chmod 755 ${BUILD_DIR}/DEBIAN/preinst ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 
 dpkg-deb --build ${BUILD_DIR} ${TARGET_DEB}

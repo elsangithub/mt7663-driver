@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-VERSION="1.0.7"
+VERSION="1.0.8-rc5"
 
 # Detect existing registrations dynamically
 OLD_VERSIONS=$(dkms status -m mt7663 2>/dev/null | awk -F'[/,]' '{print $2}' | sort -u)
@@ -30,11 +30,7 @@ if [ -d "$KERNEL_BUILD_DIR" ] && [ -d "$MOD_DIR" ]; then
         echo "Menyelaraskan toolchain header kernel (rebuilding modpost untuk glibc lokal)..."
         EXTRA_SRCS=""
         [ -f "${MOD_DIR}/symsearch.c" ] && EXTRA_SRCS="${MOD_DIR}/symsearch.c"
-        gcc -O2 -std=gnu11 -I "${KERNEL_BUILD_DIR}/scripts/include" -o "$MODPOST_BIN" \
-            "${MOD_DIR}/modpost.c" \
-            "${MOD_DIR}/file2alias.c" \
-            "${MOD_DIR}/sumversion.c" \
-            $EXTRA_SRCS >/dev/null 2>&1 || true
+        gcc -O2 -std=gnu11 -I "${KERNEL_BUILD_DIR}/scripts/include" -o "$MODPOST_BIN"             "${MOD_DIR}/modpost.c"             "${MOD_DIR}/file2alias.c"             "${MOD_DIR}/sumversion.c"             $EXTRA_SRCS >/dev/null 2>&1 || true
     fi
 fi
 
@@ -48,30 +44,11 @@ modprobe wlan_mt7663_sdio 2>/dev/null || true
 
 # Apply sysctl and udev performance rules
 sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
-sysctl -p /etc/sysctl.d/99-mt7663.conf 2>/dev/null || true
 udevadm control --reload-rules 2>/dev/null || true
 udevadm trigger 2>/dev/null || true
 /usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
 ip link set wlan0 up 2>/dev/null || true
 systemctl restart wpa_supplicant 2>/dev/null || true
 systemctl restart NetworkManager 2>/dev/null || true
-chmod 755 /usr/sbin/mt7663-hotspot 2>/dev/null || true
-chmod 755 /etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh 2>/dev/null || true
-chmod 755 /usr/lib/mt7663-webui/server.py 2>/dev/null || true
-chmod 755 /etc/update-motd.d/15-ap-info 2>/dev/null || true
 
-# Clean up duplicate / stale hostapd configurations completely
-rm -f /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak /etc/hostapd/*.conf.old 2>/dev/null || true
-
-# Clean up old external service if present
-if [ -d /run/systemd/system ]; then
-    systemctl daemon-reload 2>/dev/null || true
-    systemctl stop wlan-tune.service 2>/dev/null || true
-    systemctl disable wlan-tune.service 2>/dev/null || true
-    rm -f /etc/systemd/system/wlan-tune.service 2>/dev/null || true
-    systemctl enable mt7663-shutdown.service 2>/dev/null || true
-    systemctl enable mt7663-hotspot.service 2>/dev/null || true
-    systemctl restart mt7663-hotspot.service 2>/dev/null || true
-    systemctl enable mt7663-webui.service 2>/dev/null || true
-    systemctl restart mt7663-webui.service 2>/dev/null || true
-fi
+echo "mt7663 driver installed successfully! Interface wlan0 is ready."
