@@ -135,6 +135,64 @@ grep -E "CPU|mmc" /proc/interrupts
 
 ---
 
+## 🌐 Dashboard Web UI Router All-in-One & Manajemen Hotspot
+
+Mulai rilis **v1.0.8**, paket `mt7663-dkms` telah dilengkapi dengan antarmuka web manajemen router (*Router Dashboard*) berbasis port **`8080`** yang sangat ringan, modern, dan mandiri tanpa ketergantungan software berat (*zero-dependency*).
+
+<div align="center">
+  <h3>⚡ MT7663 Router Management Dashboard</h3>
+  <p><i>Ubah TV Box FiberHome HG680-FJ Anda menjadi Router Portabel & Wi-Fi Repeater Canggih!</i></p>
+</div>
+
+### 🔑 Fitur Utama Web UI:
+- **Mesin Multi-Threaded WSGI Cepat**: Dibangun menggunakan Python 3 + `bottle.py` WSGI (`ThreadingWSGIServer`). Mengonsumsi RAM di bawah 15 MB, 0% CPU saat santai (*idle*), dan mampu melayani banyak tab/perangkat secara bersamaan tanpa antrean (*non-blocking*).
+- **4 Kartu Ringkasan Real-Time**:
+  1. 📡 **Hotspot 5 GHz (`ap0`)**: Memantau SSID, Lebar Pita (20/40/80 MHz VHT80), Kanal, Mode Keamanan, IP Gateway, dan jumlah klien terhubung.
+  2. 📶 **Klien Wi-Fi (`wlan0`)**: Status koneksi, SSID yang terhubung, persentase kekuatan sinyal, dan alamat IP penerima.
+  3. 🌐 **Sumber Internet (WAN)**: Deteksi otomatis jalur internet aktif (`eth0` Kabel LAN atau `wlan0` Penangkap Wi-Fi) lengkap dengan status NAT Masquerade.
+  4. ⚡ **Kondisi STB**: Rilis kernel, suhu SOC chipset, CPU Load, persentase dan pemakaian RAM dalam 2 baris terpisah (MB & %), serta *uptime* sistem.
+- **Mode Wireless Repeater (STA + SoftAP Bersamaan)**: Anda dapat memindai Wi-Fi sekitar langsung dari browser, lalu menghubungkan STB ke Wi-Fi rumah dengan 1 klik, sementara Hotspot 5 GHz di `ap0` tetap memancarkan sinyal secara bersamaan!
+- **Pemantauan Kuota & Trafik Real-Time**: Tabel perangkat menampilkan pemantauan lalu lintas data **Unggah (UP)** dan **Unduh (DOWN)** secara langsung untuk setiap perangkat yang tersambung via *iptables accounting*.
+- **Pemberian Nama Perangkat Permanen (`✏️`)**: Mengatasi masalah MAC Address acak pada Android/iOS melalui database `/var/lib/misc/mt7663-devices.json`. Cukup klik ikon pensil di samping nama perangkat untuk memberi nama panggilan khusus (misal: "HP Saya", "Laptop Kerja").
+- **Keamanan Login Administrator**: Dilindungi autentikasi login (bawaan: `admin` / `admin`, dapat diubah di menu) dengan sistem persistensi sesi `/var/lib/misc/mt7663-sessions.json` yang tidak akan ter-logout saat service direstart.
+- **Preset DNS Server Cepat**: Ganti DNS Hotspot dalam 1 klik: Cloudflare (`1.1.1.1`), Google (`8.8.8.8`), AdGuard Anti-Iklan (`94.140.14.14`), Quad9 (`9.9.9.9`), atau Custom DNS.
+- **Dukungan Dwibahasa Penuh**: Bebas berganti antara **🇬🇧 English** (bawaan) dan **🇮🇩 Bahasa Indonesia** melalui dropdown di pojok kanan atas.
+
+---
+
+### 💻 Cara Mengakses Web UI:
+
+| Jalur Akses | Alamat URL | Keterangan |
+| :--- | :--- | :--- |
+| **Dari PC via Kabel LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Alamat IP bawaan STB di jaringan rumah Anda. |
+| **Dari HP di Hotspot STB (`ap0`)** | **`http://192.168.4.1:8080`** | Alamat Gateway saat HP tersambung ke Wi-Fi `HG680_5G_VHT80`. |
+| **Dari PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | Alamat IP `wlan0` saat STB tersambung ke Wi-Fi rumah. |
+
+> [!TIP]
+> **Source-Based Policy Routing (Tabel 200)**:
+> Berkat script dispatcher otomatis (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) dan tuning kernel sysctl (`arp_ignore=1`, `arp_announce=2`), Anda dapat membuka **KEDUA ALAMAT SEKALIGUS** (`http://192.168.1.9:8080` dan `http://192.168.1.2:8080`) dari browser PC tanpa bentrok atau macet!
+
+---
+
+### 🛠️ Perintah Terminal & Manajemen Service:
+
+```bash
+# Manajemen Layanan Web UI
+sudo systemctl status mt7663-webui
+sudo systemctl restart mt7663-webui
+
+# Manajemen Layanan Hotspot
+sudo systemctl status mt7663-hotspot
+sudo systemctl restart mt7663-hotspot
+
+# Perintah Manual CLI Hotspot
+sudo mt7663-hotspot start    # Menyalakan Hotspot 5GHz di ap0
+sudo mt7663-hotspot stop     # Mematikan Hotspot dan mengembalikan iptables
+sudo mt7663-hotspot status   # Melihat status dan daftar perangkat terhubung
+```
+
+---
+
 ## 🔥 Fitur Baru v1.0.8: Mode Hotspot / SoftAP 5 GHz (`ap0`)
 
 Driver versi 1.0.8 menghadirkan antarmuka virtual terisolasi **`ap0`** untuk difungsikan sebagai **Hotspot Wi-Fi 5 GHz berkecepatan tinggi** (802.11ac VHT80) yang meneruskan koneksi internet kabel (`eth0`) ke perangkat nirkabel (smartphone, laptop, dll.).

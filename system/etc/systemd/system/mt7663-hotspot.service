@@ -5,9 +5,10 @@ Wants=network.target
 
 [Service]
 Type=forking
+PIDFile=/run/mt7663-hostapd.pid
 ExecStart=/usr/sbin/mt7663-hotspot start
 ExecStop=/usr/sbin/mt7663-hotspot stop
-Restart=on-failure
+Restart=always
 RestartSec=3
 
 [Install]

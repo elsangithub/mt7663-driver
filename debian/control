@@ -1,11 +1,11 @@
 Package: mt7663-dkms
-Version: 1.0.7
+Version: 1.0.8
 Architecture: all
 Maintainer: Van der Decken
-Depends: dkms, build-essential
+Depends: dkms, build-essential, python3, hostapd, dnsmasq, iptables
 Section: kernel
 Priority: optional
-Description: MediaTek MT7663 SDIO Wi-Fi driver module (DKMS)
+Description: MediaTek MT7663 SDIO Wi-Fi driver module & Router Web UI (DKMS)
  Patched high-performance Linux driver for MediaTek MT7663 SDIO Wi-Fi,
  tuned for Linux 5.10 LTS, 6.12+ and 6.18+ with native SMP CPU affinity, udev instant IRQ mapping,
  and 802.11ac A-MSDU/Beamforming throughput boost.

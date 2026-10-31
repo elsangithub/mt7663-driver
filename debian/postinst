@@ -48,12 +48,16 @@ modprobe wlan_mt7663_sdio 2>/dev/null || true
 
 # Apply sysctl and udev performance rules
 sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
+sysctl -p /etc/sysctl.d/99-mt7663.conf 2>/dev/null || true
 udevadm control --reload-rules 2>/dev/null || true
 udevadm trigger 2>/dev/null || true
 /usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
 ip link set wlan0 up 2>/dev/null || true
 systemctl restart wpa_supplicant 2>/dev/null || true
 systemctl restart NetworkManager 2>/dev/null || true
+chmod 755 /usr/sbin/mt7663-hotspot 2>/dev/null || true
+chmod 755 /etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh 2>/dev/null || true
+chmod 755 /usr/lib/mt7663-webui/server.py 2>/dev/null || true
 
 # Clean up old external service if present
 if [ -d /run/systemd/system ]; then
@@ -62,4 +66,8 @@ if [ -d /run/systemd/system ]; then
     systemctl disable wlan-tune.service 2>/dev/null || true
     rm -f /etc/systemd/system/wlan-tune.service 2>/dev/null || true
     systemctl enable mt7663-shutdown.service 2>/dev/null || true
+    systemctl enable mt7663-hotspot.service 2>/dev/null || true
+    systemctl restart mt7663-hotspot.service 2>/dev/null || true
+    systemctl enable mt7663-webui.service 2>/dev/null || true
+    systemctl restart mt7663-webui.service 2>/dev/null || true
 fi

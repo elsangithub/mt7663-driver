@@ -2,12 +2,30 @@
 # MediaTek MT7663 SoftAP / Hotspot Management Utility
 # FiberHome HG680-FJ (Amlogic Meson G12A)
 
-CONF_FILE="/etc/hostapd/hostapd-mt7663.conf"
+DEFAULT_CONF="/etc/default/mt7663-hotspot"
+HOSTAPD_CONF="/etc/hostapd/hostapd-mt7663.conf"
 HOSTAPD_PID="/run/mt7663-hostapd.pid"
 DNSMASQ_PID="/run/mt7663-dnsmasq.pid"
 AP_IF="ap0"
-AP_IP="192.168.4.1/24"
-AP_MTU="1408"
+
+# Load user custom network configuration if exists
+if [ -f "$DEFAULT_CONF" ]; then
+    # shellcheck disable=SC1090
+    . "$DEFAULT_CONF"
+fi
+
+AP_GATEWAY="${AP_GATEWAY:-192.168.4.1}"
+AP_NETMASK="${AP_NETMASK:-255.255.255.0}"
+AP_CIDR="${AP_CIDR:-24}"
+DHCP_START="${DHCP_START:-10}"
+DHCP_END="${DHCP_END:-100}"
+DHCP_LEASE="${DHCP_LEASE:-12h}"
+DNS_SERVERS="${DNS_SERVERS:-1.1.1.1,8.8.8.8}"
+AP_MTU="${AP_MTU:-1408}"
+
+# Extract base subnet (e.g. 192.168.4 from 192.168.4.1)
+SUBNET_BASE="${AP_GATEWAY%.*}"
+DHCP_RANGE="${SUBNET_BASE}.${DHCP_START},${SUBNET_BASE}.${DHCP_END},${AP_NETMASK},${DHCP_LEASE}"
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "[ERROR] mt7663-hotspot must be run as root." >&2
@@ -32,36 +50,66 @@ start_hotspot() {
     fi
 
     ip addr flush dev "$AP_IF" 2>/dev/null || true
-    ip addr add "$AP_IP" dev "$AP_IF"
+    ip addr add "${AP_GATEWAY}/${AP_CIDR}" dev "$AP_IF"
     ip link set "$AP_IF" mtu "$AP_MTU"
     ip link set "$AP_IF" up
 
     sysctl -w net.ipv4.ip_forward=1 >/dev/null
     
-    UPSTREAM_IF=$(ip route show default 2>/dev/null | awk '{print $5}' | head -n1)
-    [ -z "$UPSTREAM_IF" ] && UPSTREAM_IF="eth0"
-    
-    iptables -t nat -C POSTROUTING -o "$UPSTREAM_IF" -j MASQUERADE 2>/dev/null || \
-    iptables -t nat -A POSTROUTING -o "$UPSTREAM_IF" -j MASQUERADE
+    # Masquerade traffic going out via either Ethernet (eth0) or Wi-Fi Client (wlan0)
+    for dev in eth0 wlan0; do
+        iptables -t nat -C POSTROUTING -o "$dev" -j MASQUERADE 2>/dev/null || \
+        iptables -t nat -A POSTROUTING -o "$dev" -j MASQUERADE
+    done
+
+    # Setup Hotspot Traffic Accounting Chain
+    iptables -N HOTSPOT_ACCT 2>/dev/null || true
+    iptables -C FORWARD -j HOTSPOT_ACCT 2>/dev/null || iptables -I FORWARD 1 -j HOTSPOT_ACCT
+
+    # Clamp TCP MSS to path MTU to prevent packet fragmentation/drops during speed tests
+    iptables -t mangle -C FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || \
+    iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+
+    # Auto-align 5 GHz channel in Repeater Mode to prevent MCC frequency conflict
+    if command -v iw >/dev/null 2>&1 && [ -f "$HOSTAPD_CONF" ]; then
+        WLAN_FREQ=$(iw dev wlan0 link 2>/dev/null | awk '/freq:/ {print $2}')
+        HAPD_MODE=$(grep -E '^hw_mode=' "$HOSTAPD_CONF" 2>/dev/null | cut -d'=' -f2)
+        if [ -n "$WLAN_FREQ" ] && [ "$WLAN_FREQ" -ge 5000 ] && [ "$HAPD_MODE" = "a" ]; then
+            TARGET_CHAN=$(( (WLAN_FREQ - 5000) / 5 ))
+            CURR_CHAN=$(grep -E '^channel=' "$HOSTAPD_CONF" 2>/dev/null | cut -d'=' -f2)
+            if [ -n "$TARGET_CHAN" ] && [ "$TARGET_CHAN" -gt 0 ] && [ "$CURR_CHAN" != "$TARGET_CHAN" ]; then
+                echo "[INFO] Repeater mode: auto-aligning Hotspot channel ${CURR_CHAN} -> ${TARGET_CHAN} (${WLAN_FREQ} MHz)..."
+                sed -i "s/^channel=.*/channel=${TARGET_CHAN}/" "$HOSTAPD_CONF"
+                if [ "$TARGET_CHAN" -ge 149 ]; then
+                    sed -i "s/^vht_oper_centr_freq_seg0_idx=.*/vht_oper_centr_freq_seg0_idx=155/" "$HOSTAPD_CONF"
+                    sed -i "s/^ht_capab=.*/ht_capab=[HT40-]/" "$HOSTAPD_CONF"
+                elif [ "$TARGET_CHAN" -ge 36 ] && [ "$TARGET_CHAN" -le 48 ]; then
+                    sed -i "s/^vht_oper_centr_freq_seg0_idx=.*/vht_oper_centr_freq_seg0_idx=42/" "$HOSTAPD_CONF"
+                    sed -i "s/^ht_capab=.*/ht_capab=[HT40+]/" "$HOSTAPD_CONF"
+                fi
+            fi
+        fi
+    fi
 
     if [ -f "$DNSMASQ_PID" ] && kill -0 "$(cat "$DNSMASQ_PID")" 2>/dev/null; then
         kill "$(cat "$DNSMASQ_PID")" 2>/dev/null || true
     fi
+    # Format DHCP DNS option (e.g. --dhcp-option=6,1.1.1.1,8.8.8.8)
     dnsmasq -C /dev/null -p 0 -i "$AP_IF" --bind-interfaces \
-        --dhcp-range=192.168.4.10,192.168.4.100,255.255.255.0,12h \
-        --dhcp-option=3,192.168.4.1 \
-        --dhcp-option=6,8.8.8.8,1.1.1.1 \
-        --dhcp-option=26,1408 \
+        --dhcp-range="${DHCP_RANGE}" \
+        --dhcp-option=3,"${AP_GATEWAY}" \
+        --dhcp-option=6,${DNS_SERVERS} \
+        --dhcp-option=26,"${AP_MTU}" \
         --pid-file="$DNSMASQ_PID"
 
     if [ -f "$HOSTAPD_PID" ] && kill -0 "$(cat "$HOSTAPD_PID")" 2>/dev/null; then
         kill "$(cat "$HOSTAPD_PID")" 2>/dev/null || true
     fi
-    hostapd -B -P "$HOSTAPD_PID" -f /var/log/hostapd.log "$CONF_FILE"
+    hostapd -B -P "$HOSTAPD_PID" -f /var/log/hostapd.log "$HOSTAPD_CONF"
     
     sleep 1
     if [ -f "$HOSTAPD_PID" ] && kill -0 "$(cat "$HOSTAPD_PID")" 2>/dev/null; then
-        echo "[SUCCESS] MT7663 Hotspot is active on $AP_IF (SSID: HG680_5G_VHT80, Gateway: 192.168.4.1)"
+        echo "[SUCCESS] MT7663 Hotspot is active on $AP_IF (Gateway: ${AP_GATEWAY}/${AP_CIDR}, DNS: ${DNS_SERVERS})"
     else
         echo "[ERROR] Failed to start hostapd. Check /var/log/hostapd.log for details." >&2
         exit 1
@@ -80,6 +128,9 @@ stop_hotspot() {
         kill "$(cat "$DNSMASQ_PID")" 2>/dev/null || true
         rm -f "$DNSMASQ_PID"
     fi
+
+    # Clean up TCP MSS clamping rule
+    iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
 
     if ip link show "$AP_IF" >/dev/null 2>&1; then
         ip addr flush dev "$AP_IF" 2>/dev/null || true
@@ -102,6 +153,7 @@ status_hotspot() {
         echo "Dnsmasq: STOPPED"
     fi
 
+    echo "Gateway: ${AP_GATEWAY}/${AP_CIDR} | DHCP: ${SUBNET_BASE}.${DHCP_START}-${DHCP_END} | DNS: ${DNS_SERVERS}"
     echo "--- Connected Clients ($AP_IF) ---"
     local found=0
     if [ -f /var/lib/misc/dnsmasq.leases ] && [ -s /var/lib/misc/dnsmasq.leases ]; then
@@ -130,7 +182,27 @@ status_hotspot() {
     fi
 }
 
+auto_fallback_2g() {
+    if ! command -v iw >/dev/null 2>&1 || [ ! -f "$HOSTAPD_CONF" ]; then
+        return 0
+    fi
+    WLAN_FREQ=$(iw dev wlan0 link 2>/dev/null | awk '/freq:/ {print $2}')
+    HAPD_MODE=$(grep -E '^hw_mode=' "$HOSTAPD_CONF" 2>/dev/null | cut -d'=' -f2)
+    if [ -n "$WLAN_FREQ" ] && [ "$WLAN_FREQ" -ge 5000 ] && [ "$HAPD_MODE" = "a" ]; then
+        echo "[WARN] Failover to 5GHz Wi-Fi (wlan0) detected. Auto-switching Hotspot to 2.4GHz (DBDC mode) for stability..."
+        sed -i "s/^hw_mode=.*/hw_mode=g/" "$HOSTAPD_CONF"
+        sed -i "s/^channel=.*/channel=6/" "$HOSTAPD_CONF"
+        sed -i "s/^ieee80211ac=.*/ieee80211ac=0/" "$HOSTAPD_CONF"
+        sed -i "s/^ht_capab=.*/ht_capab=[HT40+]/" "$HOSTAPD_CONF"
+        sed -i "/^vht_/d" "$HOSTAPD_CONF"
+        systemctl restart mt7663-hotspot 2>/dev/null || true
+    fi
+}
+
 case "$1" in
+    auto-fallback-2g)
+        auto_fallback_2g
+        ;;
     start)
         start_hotspot
         ;;

@@ -134,6 +134,63 @@ grep -E "CPU|mmc" /proc/interrupts
 
 ---
 
+## 🌐 All-in-One Turnkey Router Web UI Dashboard & Hotspot Manager
+
+Starting in **v1.0.8**, `mt7663-dkms` includes a built-in, lightweight, zero-dependency Web UI Router Dashboard (`mt7663-webui`) listening on port **`8080`**.
+
+<div align="center">
+  <h3>⚡ MT7663 Modern Dark-Mode Router Dashboard</h3>
+  <p><i>Turn your FiberHome HG680-FJ TV Box into an enterprise-grade portable router & wireless repeater!</i></p>
+</div>
+
+### 🔑 Key Features of the Web UI:
+- **Zero-Dependency Multi-Threaded Engine**: Built on Python 3 + `bottle.py` WSGI (`ThreadingWSGIServer`). Consumes under 15 MB RAM, 0% CPU idle, handles simultaneous multi-client access without queueing or blocking.
+- **4 Real-Time Overview Cards**:
+  1. 📡 **5 GHz Hotspot (`ap0`)**: SSID, Channel Width (20/40/80 MHz), Channel, Security Mode, Gateway IP, and active client count.
+  2. 📶 **Wi-Fi Client (`wlan0`)**: Live connection state, connected SSID, signal strength percentage, and IP address.
+  3. 🌐 **Internet Source (WAN)**: Automatic detection of the active upstream route (`eth0` Ethernet or `wlan0` Wi-Fi Repeater) and NAT Masquerade state.
+  4. ⚡ **STB Status**: Kernel release, SOC temperature, CPU load, cleanly split RAM usage (MB & %), and system uptime.
+- **Wireless Repeater Mode (STA + SoftAP Concurrency)**: Scan nearby Wi-Fi networks in the dashboard and connect `wlan0` to your home router with one click while `ap0` continues broadcasting 5 GHz Wi-Fi simultaneously!
+- **Real-Time Client Bandwidth Tracking**: Connected Devices table monitors live **Upload (UP)** and **Download (DOWN)** byte consumption per client directly from iptables traffic accounting.
+- **Persistent Device Aliasing (`✏️`)**: Overcomes Android/iOS MAC randomization by caching friendly names permanently in `/var/lib/misc/mt7663-devices.json`. Click the pencil icon next to any device to assign a custom nickname.
+- **Administrator Security Authentication**: Protected login (`admin` / `admin` default, customizable) with session persistence surviving service restarts and reboots.
+- **DNS Server Presets**: Switch hotspot DHCP DNS with one click between Cloudflare (`1.1.1.1`), Google (`8.8.8.8`), AdGuard Anti-Ads (`94.140.14.14`), Quad9 (`9.9.9.9`), or Custom DNS.
+- **Native Bilingual Support**: Toggle seamlessly between **🇬🇧 English** (default) and **🇮🇩 Bahasa Indonesia**.
+
+---
+
+### 💻 Accessing the Web UI:
+
+| Access Method | URL | Description |
+| :--- | :--- | :--- |
+| **From PC via Wired LAN (`eth0`)** | **`http://192.168.1.9:8080`** | Default static/DHCP IP of the STB on your home network. |
+| **From Devices on Hotspot (`ap0`)** | **`http://192.168.4.1:8080`** | Gateway IP for smartphones/laptops connected to `HG680_5G_VHT80`. |
+| **From PC via Wi-Fi Client (`wlan0`)** | **`http://192.168.1.2:8080`** | IP assigned to `wlan0` when connected to your home router. |
+
+> [!TIP]
+> **Source-Based Policy Routing (Table 200)**:
+> Thanks to our automated NetworkManager dispatcher script (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) and kernel sysctl tuning (`arp_ignore=1`, `arp_announce=2`), you can access **BOTH** `http://192.168.1.9:8080` AND `http://192.168.1.2:8080` concurrently from your PC without asymmetric packet drops!
+
+---
+
+### 🛠️ CLI & Systemd Service Management:
+
+```bash
+# Web UI Service Management
+sudo systemctl status mt7663-webui
+sudo systemctl restart mt7663-webui
+
+# Hotspot Service Management
+sudo systemctl status mt7663-hotspot
+sudo systemctl restart mt7663-hotspot
+
+# Manual CLI Hotspot Controls
+sudo mt7663-hotspot start    # Start 5GHz AP on ap0
+sudo mt7663-hotspot stop     # Stop AP and restore rules
+sudo mt7663-hotspot status   # Display active status & connected clients
+```
+
+---
 ## 🔥 New Feature in v1.0.8: 5 GHz SoftAP / Hotspot Mode (`ap0`)
 
 Driver v1.0.8 introduces a dedicated virtual interface **`ap0`** designed for high-performance **5 GHz 802.11ac VHT80 Wi-Fi Hotspot** functionality, bridging wired Ethernet (`eth0`) to wireless clients (smartphones, laptops, etc.).

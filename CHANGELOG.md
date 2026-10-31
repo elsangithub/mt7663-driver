@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8-rc4] - 2026-10-31
+### Added
+- **All-in-One Turnkey Router Web UI Dashboard (`mt7663-webui`)**:
+  - Integrated zero-dependency Python 3 + `bottle.py` Multi-Threaded WSGI Server (`ThreadingWSGIServer`) listening on port `8080` with minimal memory footprint (~15 MB RAM, 0% CPU idle).
+  - Modern Dark Mode Slate dashboard with 4 distinct real-time overview cards: 5 GHz Hotspot (`ap0`), Wi-Fi Client (`wlan0`), Internet Source (WAN), and System STB Status (cleanly split RAM MB and %, SOC temperature, loadavg, uptime).
+  - Full Administrator Authentication: Protected access with session persistence (`/var/lib/misc/mt7663-sessions.json`) to seamlessly survive service restarts and reboots.
+  - Native Bilingual Interface: English (default) and Bahasa Indonesia with dynamic navigation translation and a unified header dropdown switcher.
+  - Live Bandwidth Accounting: Per-client real-time Upload (UP) and Download (DOWN) traffic monitoring integrated into iptables `HOTSPOT_ACCT` chain.
+  - Persistent Device Cache & In-Table Rename (Alias): Overcomes Android/iOS MAC randomization and missing DHCP Option 12 hostnames (`*`) via `/var/lib/misc/mt7663-devices.json` and a one-click inline edit pencil button (`✏️`).
+  - Hotspot GUI Configurator: Interactive configuration for SSID, Security Mode (WPA2-PSK, WPA2/WPA3 Mixed, WPA3, Open) with eye toggle (`👁️`), Channel Width (20, 40, 80 MHz / VHT80), 5 GHz Channel, Gateway IP, DHCP pool, and DNS Presets (Cloudflare, Google, AdGuard Anti-Ads, Quad9, Custom).
+- **Dual-Band Dual-Concurrent (DBDC) Wireless Repeater Mode**:
+  - Hardware-level concurrency: Simultaneous SoftAP broadcasting (`ap0` on 5 GHz) and upstream Wi-Fi client reception (`wlan0` on 2.4 GHz or 5 GHz) on `#channels <= 2`.
+  - In-dashboard Wi-Fi scanner and connection modal with explicit `ifname wlan0` targeting and 60-second association/DHCP timeout for 100% reliable wireless internet sharing.
+  - Dynamic dual-interface NAT masquerading for both `eth0` and `wlan0`.
+- **Source-Based Policy Routing & Anti-ARP Flapping**:
+  - Automated NetworkManager dispatcher script (`/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh`) dynamically managing routing Table 200 with source-based routing for `wlan0`.
+  - Kernel sysctl configuration (`/etc/sysctl.d/99-mt7663.conf`) enforcing `arp_ignore=1`, `arp_announce=2`, and `ip_forward=1`, allowing concurrent, conflict-free access via both `http://192.168.1.9:8080` (eth0) and `http://192.168.1.2:8080` (wlan0) on the same subnet without asymmetric packet drop.
+
 ## [1.0.8-rc3] - 2026-10-31
 ### Fixed
 - **Hotspot Client Discovery in Status Command**: Enhanced `/usr/sbin/mt7663-hotspot status` to accurately detect, deduplicate, and display connected client stations with their hostname, IP address, MAC, and ARP reachability state by reading active `dnsmasq` DHCP leases and `ip neigh` tables instead of relying on MediaTek's unpopulated `iw dev ap0 station dump`.

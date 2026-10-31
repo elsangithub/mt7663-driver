@@ -33,12 +33,16 @@ mkdir -p ${BUILD_DIR}/DEBIAN
 cp -a chips common include mgmt nic os prealloc Makefile Kconfig dkms.conf CHANGELOG.md README.md ${SRC_DIR}/
 sed -i "s/PACKAGE_VERSION=\".*\"/PACKAGE_VERSION=\"${VERSION}\"/" ${SRC_DIR}/dkms.conf
 find ${SRC_DIR} -type f \( -name "*.o" -o -name "*.o.d" -o -name "*.cmd" -o -name "*.ko" -o -name "*.mod*" \) -delete
+find ${BUILD_DIR} -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+find ${BUILD_DIR} -name "*.pyc" -delete 2>/dev/null || true
 
 # 2. Copy ALL system integration files at once from unified system/ directory
 cp -a system/* ${BUILD_DIR}/
 chmod 644 ${BUILD_DIR}/lib/firmware/*
 chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
 [ -f "${BUILD_DIR}/usr/sbin/mt7663-hotspot" ] && chmod 755 "${BUILD_DIR}/usr/sbin/mt7663-hotspot"
+[ -f "${BUILD_DIR}/usr/lib/mt7663-webui/server.py" ] && chmod 755 "${BUILD_DIR}/usr/lib/mt7663-webui/server.py"
+[ -f "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh" ] && chmod 755 "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh"
 
 # 3. Copy Debian package control scripts from debian/ directory
 cp -a debian/* ${BUILD_DIR}/DEBIAN/
