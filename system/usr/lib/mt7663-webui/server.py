@@ -832,6 +832,12 @@ ieee80211n=1
     try:
         with open(HOSTAPD_CONF, "w") as f:
             f.write(hostapd_content)
+        # Remove stale hostapd.conf to prevent MOTD dual-SSID ghost displays
+        if os.path.exists("/etc/hostapd/hostapd.conf"):
+            try:
+                os.remove("/etc/hostapd/hostapd.conf")
+            except Exception:
+                pass
     except Exception as e:
         response.status = 500
         return {"status": "error", "message": f"Failed writing {HOSTAPD_CONF}: {e}"}
@@ -965,17 +971,22 @@ def api_wifi_connect():
 
     saved_profiles = get_saved_wifi_profiles()
 
-    # If saved and no password supplied, reconnect directly using saved profile
+    # If saved and no password supplied, attempt seamless reconnect with saved profile
     if not password and ssid in saved_profiles:
-        code, stdout, stderr = run_cmd(["nmcli", "con", "up", "id", ssid, "ifname", "wlan0"], timeout=35)
+        code, stdout, stderr = run_cmd(["nmcli", "con", "up", "id", ssid, "ifname", "wlan0"], timeout=30)
         if code == 0:
-            return {"status": "ok", "message": f"Successfully reconnected to saved Wi-Fi '{ssid}'!"}
+            return {"status": "ok", "message": f"Successfully connected to saved Wi-Fi '{ssid}'!"}
         else:
-            err_msg = stderr or stdout or "Failed activating saved connection"
-            response.status = 500
-            return {"status": "error", "message": f"Failed reconnecting to '{ssid}': {err_msg}"}
+            err_msg = stderr or stdout or ""
+            # Password may have changed on router -> trigger prompt in Web UI
+            return {
+                "status": "error",
+                "need_password": True,
+                "message": f"Sandi tersimpan tidak cocok atau telah diubah di router. Silakan masukkan sandi baru untuk '{ssid}'."
+            }
 
-    # If new password supplied or new network, remove older profile if exists
+    # If new password supplied or new network:
+    # Update existing profile or create new one cleanly
     if ssid in saved_profiles:
         run_cmd(["nmcli", "con", "delete", "id", ssid], timeout=5)
 
