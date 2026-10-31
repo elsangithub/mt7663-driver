@@ -886,8 +886,21 @@ def api_hotspot_action():
         response.status = 500
         return {"status": "error", "message": f"Failed executing '{action}': {stderr or stdout}"}
 
+def get_saved_wifi_profiles():
+    saved = set()
+    code, stdout, _ = run_cmd(["nmcli", "-t", "-f", "NAME,TYPE", "con", "show"], timeout=5)
+    if code == 0:
+        for line in stdout.splitlines():
+            parts = line.split(":")
+            if len(parts) >= 2:
+                ctype = parts[1].strip()
+                if "wireless" in ctype or "wifi" in ctype:
+                    saved.add(parts[0].strip())
+    return saved
+
 @app.route('/api/wifi/scan', method=['GET'])
 def api_wifi_scan():
+    saved_profiles = get_saved_wifi_profiles()
     code, stdout, stderr = run_cmd([
         "nmcli", "-t", "-f", "IN-USE,SSID,CHAN,SIGNAL,SECURITY",
         "dev", "wifi", "list", "--rescan", "yes"
@@ -918,6 +931,7 @@ def api_wifi_scan():
                 continue
                 
             freq = "5 GHz" if chan >= 36 else "2.4 GHz"
+            is_saved = (ssid in saved_profiles)
 
             if ssid not in seen:
                 seen.add(ssid)
@@ -927,10 +941,12 @@ def api_wifi_scan():
                     "channel": chan,
                     "freq": freq,
                     "signal": signal,
-                    "security": security
+                    "security": security,
+                    "saved": is_saved
                 })
 
-    networks.sort(key=lambda x: (not x["in_use"], -x["signal"]))
+    # Sort: In-use first, then Saved, then strongest signal
+    networks.sort(key=lambda x: (not x["in_use"], not x["saved"], -x["signal"]))
     return {"status": "ok", "networks": networks}
 
 @app.route('/api/wifi/connect', method=['POST'])
@@ -947,8 +963,21 @@ def api_wifi_connect():
         response.status = 400
         return {"status": "error", "message": "SSID cannot be empty."}
 
-    # Clean up any stale profile for this SSID
-    run_cmd(["nmcli", "con", "delete", ssid], timeout=5)
+    saved_profiles = get_saved_wifi_profiles()
+
+    # If saved and no password supplied, reconnect directly using saved profile
+    if not password and ssid in saved_profiles:
+        code, stdout, stderr = run_cmd(["nmcli", "con", "up", "id", ssid, "ifname", "wlan0"], timeout=35)
+        if code == 0:
+            return {"status": "ok", "message": f"Successfully reconnected to saved Wi-Fi '{ssid}'!"}
+        else:
+            err_msg = stderr or stdout or "Failed activating saved connection"
+            response.status = 500
+            return {"status": "error", "message": f"Failed reconnecting to '{ssid}': {err_msg}"}
+
+    # If new password supplied or new network, remove older profile if exists
+    if ssid in saved_profiles:
+        run_cmd(["nmcli", "con", "delete", "id", ssid], timeout=5)
 
     # Explicitly target wlan0 and allow 60s for handshake + DHCP
     cmd = ["nmcli", "dev", "wifi", "connect", ssid, "ifname", "wlan0"]
@@ -962,6 +991,25 @@ def api_wifi_connect():
         err_msg = stderr or stdout or "Connection timed out or failed"
         response.status = 500
         return {"status": "error", "message": f"Failed connecting to '{ssid}': {err_msg}"}
+
+@app.route('/api/wifi/forget', method=['POST'])
+def api_wifi_forget():
+    if not is_authenticated():
+        response.status = 401
+        return {"status": "error", "message": "Unauthorized. Please log in first."}
+
+    data = request.json or {}
+    ssid = data.get("ssid", "").strip()
+    if not ssid:
+        response.status = 400
+        return {"status": "error", "message": "SSID cannot be empty."}
+
+    code, stdout, stderr = run_cmd(["nmcli", "con", "delete", "id", ssid], timeout=10)
+    if code == 0:
+        return {"status": "ok", "message": f"Profile '{ssid}' has been forgotten."}
+    else:
+        response.status = 500
+        return {"status": "error", "message": f"Failed forgetting '{ssid}': {stderr or stdout}"}
 
 @app.route('/api/wifi/disconnect', method=['POST'])
 def api_wifi_disconnect():

@@ -457,8 +457,10 @@
           <input type="password" id="modal-pass" placeholder="Enter password...">
           <button type="button" class="eye-btn" onclick="togglePass('modal-pass', this)">👁️</button>
         </div>
+        <div id="modal-pass-hint" style="font-size: 0.75rem; color: #10b981; margin-top: 0.35rem; display: none;"></div>
       </div>
-      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; margin-top: 1.5rem;">
+        <button class="btn btn-danger btn-sm" onclick="forgetWifiNetwork()" id="btn-modal-forget" style="display: none; margin-right: auto;">🗑️ <span id="lbl-modal-forget">Lupakan</span></button>
         <button class="btn btn-secondary" onclick="closeModal()" id="btn-modal-cancel">Cancel</button>
         <button class="btn btn-primary" onclick="submitWifiConnect()" id="btn-modal-connect">Connect</button>
       </div>
@@ -533,6 +535,10 @@
         btnHsSave: '💾 Save & Apply Changes',
         clHeaderTitle: 'Connect to Home Wi-Fi (Client / STA Mode)',
         btnScanWifi: 'Scan Wi-Fi',
+        lblForget: 'Forget Network',
+        lblDirectConnect: 'Quick Connect',
+        savedBadge: 'Saved',
+        hintSavedPass: 'Saved password found. Leave blank to reconnect with saved credentials, or type a new one.',
         clDesc: 'Connect the wlan0 receiver interface to your home router to receive wireless internet. The 5 GHz SoftAP hotspot on ap0 will continue broadcasting simultaneously in Wireless Repeater mode!',
         bannerConnected: 'CURRENTLY CONNECTED',
         btnDisconnect: 'Disconnect',
@@ -606,6 +612,10 @@
         btnHsSave: '💾 Simpan & Terapkan Perubahan',
         clHeaderTitle: 'Sambungkan ke Wi-Fi Rumah (Client / STA Mode)',
         btnScanWifi: 'Pindai Wi-Fi',
+        lblForget: 'Lupakan Jaringan',
+        lblDirectConnect: 'Sambungkan Langsung',
+        savedBadge: 'Tersimpan',
+        hintSavedPass: 'Sandi tersimpan tersedia. Kosongkan untuk pakai sandi lama, atau ketik sandi baru.',
         clDesc: 'Sambungkan antarmuka wlan0 ke router rumah Anda untuk mendapatkan internet nirkabel. Hotspot 5 GHz di ap0 akan tetap berjalan secara simultan dalam mode Repeater!',
         bannerConnected: 'TERHUBUNG SAAT INI',
         btnDisconnect: 'Putuskan',
@@ -1138,25 +1148,33 @@
         const res = await fetch('/api/wifi/scan');
         const data = await res.json();
         if (res.ok && data.networks && data.networks.length > 0) {
-          container.innerHTML = data.networks.map(n => `
-            <div class="wifi-item">
-              <div class="wifi-info">
-                <div class="wifi-ssid">
-                  ${n.in_use ? '⭐' : ''} ${n.ssid}
-                  ${n.security.includes('WPA') ? '🔒' : '🔓'}
+          container.innerHTML = data.networks.map(n => {
+            const isSaved = !!n.saved;
+            return `
+              <div class="wifi-item">
+                <div class="wifi-info">
+                  <div class="wifi-ssid">
+                    ${n.in_use ? '⭐' : ''} ${n.ssid}
+                    ${n.security.includes('WPA') ? '🔒' : '🔓'}
+                    ${isSaved ? `<span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); margin-left: 0.35rem; font-size: 0.7rem; font-weight: 600;">💾 ${currentLang === 'en' ? 'Saved' : 'Tersimpan'}</span>` : ''}
+                  </div>
+                  <div class="wifi-meta">
+                    ${currentLang === 'en' ? 'Signal' : 'Sinyal'}: ${n.signal}% | ${currentLang === 'en' ? 'Ch' : 'Kanal'} ${n.channel} (${n.freq}) | ${currentLang === 'en' ? 'Security' : 'Keamanan'}: ${n.security}
+                  </div>
                 </div>
-                <div class="wifi-meta">
-                  ${currentLang === 'en' ? 'Signal' : 'Sinyal'}: ${n.signal}% | ${currentLang === 'en' ? 'Ch' : 'Kanal'} ${n.channel} (${n.freq}) | ${currentLang === 'en' ? 'Security' : 'Keamanan'}: ${n.security}
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                  ${n.in_use ?
+                    `<span class="badge badge-success">${currentLang === 'en' ? 'Connected' : 'Terhubung'}</span>` :
+                    (isSaved ?
+                      `<button class="btn btn-primary btn-sm" onclick="directConnect('${n.ssid.replace(/'/g, "\\'")}')" title="${currentLang === 'en' ? '1-Click Reconnect' : 'Sambungkan Langsung'}">⚡ ${currentLang === 'en' ? 'Connect' : 'Sambungkan'}</button>
+                       <button class="btn btn-secondary btn-sm" onclick="openConnectModal('${n.ssid.replace(/'/g, "\\'")}', true)" title="${currentLang === 'en' ? 'Manage / Change Password' : 'Kelola / Ubah Sandi'}">⚙️</button>` :
+                      `<button class="btn btn-secondary btn-sm" onclick="openConnectModal('${n.ssid.replace(/'/g, "\\'")}', false)">${currentLang === 'en' ? 'Connect' : 'Sambungkan'}</button>`
+                    )
+                  }
                 </div>
               </div>
-              <div>
-                ${n.in_use ?
-                  `<span class="badge badge-success">${currentLang === 'en' ? 'Connected' : 'Terhubung'}</span>` :
-                  `<button class="btn btn-secondary btn-sm" onclick="openConnectModal('${n.ssid.replace(/'/g, "\\'")}')">${currentLang === 'en' ? 'Connect' : 'Sambungkan'}</button>`
-                }
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         } else {
           container.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-muted);">${currentLang === 'en' ? 'No Wi-Fi networks found.' : 'Tidak ada jaringan Wi-Fi yang ditemukan.'}</div>`;
         }
@@ -1165,15 +1183,75 @@
       }
     }
 
-    function openConnectModal(ssid) {
+    function openConnectModal(ssid, isSaved) {
       document.getElementById('modal-ssid').value = ssid;
-      document.getElementById('modal-pass').value = '';
+      const passInput = document.getElementById('modal-pass');
+      const passHint = document.getElementById('modal-pass-hint');
+      const forgetBtn = document.getElementById('btn-modal-forget');
+      passInput.value = '';
+
+      if (isSaved) {
+        passInput.placeholder = currentLang === 'en' ? '●●●●●●●● (Leave blank to use saved)' : '●●●●●●●● (Kosongkan jika pakai sandi lama)';
+        if (passHint) {
+          passHint.innerText = currentLang === 'en' 
+            ? '💡 Saved password found. Leave blank to reconnect, or enter a new password.' 
+            : '💡 Sandi tersimpan ditemukan. Kosongkan untuk pakai sandi lama, atau ketik sandi baru.';
+          passHint.style.display = 'block';
+        }
+        if (forgetBtn) forgetBtn.style.display = 'inline-block';
+      } else {
+        passInput.placeholder = currentLang === 'en' ? 'Enter Wi-Fi password...' : 'Masukkan kata sandi Wi-Fi...';
+        if (passHint) passHint.style.display = 'none';
+        if (forgetBtn) forgetBtn.style.display = 'none';
+      }
+
       document.getElementById('connect-modal').style.display = 'flex';
-      document.getElementById('modal-pass').focus();
+      if (!isSaved) passInput.focus();
     }
 
     function closeModal() {
       document.getElementById('connect-modal').style.display = 'none';
+    }
+
+    async function directConnect(ssid) {
+      showToast(currentLang === 'en' ? `Reconnecting to ${ssid}...` : `Menyambungkan kembali ke ${ssid}...`);
+      try {
+        const res = await fetch('/api/wifi/connect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ssid, password: ''})
+        });
+        if (res.status === 401) {
+          document.getElementById('login-modal').style.display = 'flex';
+          showToast(currentLang === 'en' ? 'Session expired. Please log in first.' : 'Sesi berakhir. Silakan login terlebih dahulu.', true);
+          return;
+        }
+        const data = await res.json();
+        showToast(data.message, !res.ok);
+        setTimeout(fetchStatus, 3000);
+        setTimeout(scanWifi, 3500);
+      } catch (e) {
+        showToast("Error connecting to Wi-Fi.", true);
+      }
+    }
+
+    async function forgetWifiNetwork() {
+      const ssid = document.getElementById('modal-ssid').value;
+      if (!confirm(currentLang === 'en' ? `Forget saved network "${ssid}"?` : `Hapus profil tersimpan untuk jaringan "${ssid}"?`)) return;
+      closeModal();
+      showToast(currentLang === 'en' ? `Forgetting ${ssid}...` : `Menghapus profil ${ssid}...`);
+      try {
+        const res = await fetch('/api/wifi/forget', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ssid})
+        });
+        const data = await res.json();
+        showToast(data.message, !res.ok);
+        setTimeout(scanWifi, 1000);
+      } catch (e) {
+        showToast("Error forgetting network.", true);
+      }
     }
 
     async function submitWifiConnect() {

@@ -58,6 +58,12 @@ systemctl restart NetworkManager 2>/dev/null || true
 chmod 755 /usr/sbin/mt7663-hotspot 2>/dev/null || true
 chmod 755 /etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh 2>/dev/null || true
 chmod 755 /usr/lib/mt7663-webui/server.py 2>/dev/null || true
+chmod 755 /etc/update-motd.d/15-ap-info 2>/dev/null || true
+
+# Clean up duplicate / stale hostapd.conf if hostapd-mt7663.conf exists
+if [ -f /etc/hostapd/hostapd-mt7663.conf ] && [ -f /etc/hostapd/hostapd.conf ]; then
+    rm -f /etc/hostapd/hostapd.conf 2>/dev/null || true
+fi
 
 # Clean up old external service if present
 if [ -d /run/systemd/system ]; then

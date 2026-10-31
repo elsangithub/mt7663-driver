@@ -42,6 +42,7 @@ chmod 644 ${BUILD_DIR}/lib/firmware/*
 chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
 [ -f "${BUILD_DIR}/usr/sbin/mt7663-hotspot" ] && chmod 755 "${BUILD_DIR}/usr/sbin/mt7663-hotspot"
 [ -f "${BUILD_DIR}/usr/lib/mt7663-webui/server.py" ] && chmod 755 "${BUILD_DIR}/usr/lib/mt7663-webui/server.py"
+[ -f "${BUILD_DIR}/etc/update-motd.d/15-ap-info" ] && chmod 755 "${BUILD_DIR}/etc/update-motd.d/15-ap-info"
 [ -f "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh" ] && chmod 755 "${BUILD_DIR}/etc/NetworkManager/dispatcher.d/90-wlan0-routing.sh"
 
 # 3. Copy Debian package control scripts from debian/ directory
