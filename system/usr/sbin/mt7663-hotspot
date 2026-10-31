@@ -128,6 +128,7 @@ stop_hotspot() {
         kill "$(cat "$DNSMASQ_PID")" 2>/dev/null || true
         rm -f "$DNSMASQ_PID"
     fi
+    pkill -f "dnsmasq.*$AP_IF" 2>/dev/null || true
 
     # Clean up TCP MSS clamping rule
     iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
