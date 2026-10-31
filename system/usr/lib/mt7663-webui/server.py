@@ -868,7 +868,8 @@ WEBUI_PASS="{pass_cred}"
         response.status = 500
         return {"status": "error", "message": f"Failed writing {DEFAULT_CONF}: {e}"}
 
-    # Restart hotspot service
+    # Enable and restart hotspot service
+    run_cmd(["systemctl", "enable", "mt7663-hotspot"], timeout=10)
     subprocess.Popen(["systemctl", "restart", "mt7663-hotspot"])
 
     return {"status": "ok", "message": "Configuration saved! Hotspot is restarting..."}
@@ -885,7 +886,17 @@ def api_hotspot_action():
         response.status = 400
         return {"status": "error", "message": "Invalid action (choose: start, stop, restart)."}
 
-    code, stdout, stderr = run_cmd(["systemctl", action, "mt7663-hotspot"], timeout=20)
+    # Persist state across reboots: disable on stop, enable on start/restart
+    if action == "stop":
+        run_cmd(["systemctl", "disable", "mt7663-hotspot"], timeout=10)
+        code, stdout, stderr = run_cmd(["systemctl", "stop", "mt7663-hotspot"], timeout=20)
+    elif action == "start":
+        run_cmd(["systemctl", "enable", "mt7663-hotspot"], timeout=10)
+        code, stdout, stderr = run_cmd(["systemctl", "start", "mt7663-hotspot"], timeout=20)
+    else:  # restart
+        run_cmd(["systemctl", "enable", "mt7663-hotspot"], timeout=10)
+        code, stdout, stderr = run_cmd(["systemctl", "restart", "mt7663-hotspot"], timeout=20)
+
     if code == 0:
         return {"status": "ok", "message": f"Action '{action}' executed successfully."}
     else:
@@ -975,6 +986,7 @@ def api_wifi_connect():
     if not password and ssid in saved_profiles:
         code, stdout, stderr = run_cmd(["nmcli", "con", "up", "id", ssid, "ifname", "wlan0"], timeout=30)
         if code == 0:
+            run_cmd(["nmcli", "con", "modify", "id", ssid, "connection.autoconnect", "yes"], timeout=5)
             return {"status": "ok", "message": f"Successfully connected to saved Wi-Fi '{ssid}'!"}
         else:
             err_msg = stderr or stdout or ""
@@ -997,6 +1009,7 @@ def api_wifi_connect():
 
     code, stdout, stderr = run_cmd(cmd, timeout=60)
     if code == 0:
+        run_cmd(["nmcli", "con", "modify", "id", ssid, "connection.autoconnect", "yes"], timeout=5)
         return {"status": "ok", "message": f"Successfully connected to Wi-Fi '{ssid}'!"}
     else:
         err_msg = stderr or stdout or "Connection timed out or failed"
@@ -1028,9 +1041,19 @@ def api_wifi_disconnect():
         response.status = 401
         return {"status": "error", "message": "Unauthorized. Please log in first."}
 
+    # Find active Wi-Fi profile on wlan0 and set autoconnect=no so it stays disconnected on reboot
+    c_code, c_out, _ = run_cmd(["nmcli", "-t", "-f", "NAME,DEVICE", "con", "show", "--active"], timeout=5)
+    if c_code == 0:
+        for line in c_out.splitlines():
+            parts = line.split(":")
+            if len(parts) >= 2 and parts[1].strip() == "wlan0":
+                act_name = parts[0].strip()
+                if act_name:
+                    run_cmd(["nmcli", "con", "modify", "id", act_name, "connection.autoconnect", "no"], timeout=5)
+
     code, stdout, stderr = run_cmd(["nmcli", "dev", "disconnect", "wlan0"], timeout=15)
     if code == 0:
-        return {"status": "ok", "message": "Wi-Fi wlan0 disconnected."}
+        return {"status": "ok", "message": "Wi-Fi wlan0 disconnected (autoconnect disabled on reboot)."}
     else:
         response.status = 500
         return {"status": "error", "message": f"Failed disconnecting: {stderr or stdout}"}
