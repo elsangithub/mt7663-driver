@@ -1,5 +1,5 @@
 Package: mt7663-dkms
-Version: 1.0.8-rc5
+Version: 1.0.8
 Section: kernel
 Priority: optional
 Architecture: all

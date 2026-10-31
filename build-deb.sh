@@ -3,7 +3,7 @@ set -e
 
 PACKAGE=mt7663-dkms
 DEFAULT_VERSION=$(grep -E "^[[:space:]]*PACKAGE_VERSION=" dkms.conf 2>/dev/null | cut -d'"' -f2)
-VERSION=${1:-${DEFAULT_VERSION:-1.0.8-rc5}}
+VERSION=${1:-${DEFAULT_VERSION:-1.0.8}}
 TARGET_DEB="${PACKAGE}_${VERSION}_all.deb"
 
 BUILD_DIR=/tmp/${PACKAGE}_build

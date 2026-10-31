@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-VERSION="1.0.8-rc5"
+VERSION="1.0.8"
 
 echo "Removing mt7663 ($VERSION) from DKMS..."
 dkms remove -m mt7663 -v $VERSION --all 2>/dev/null || true
