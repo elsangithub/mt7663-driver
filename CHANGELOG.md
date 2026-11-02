@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2026-11-03
+
+### Fixed
+- **Dual Kernel Architecture Compatibility (Linux 5.x / 6.12 LTS & 6.18+)**:
+  - Implemented exact preprocessor version gating `#if (CFG80211_VERSION_CODE >= KERNEL_VERSION(6, 14, 0))` in `os/linux/gl_p2p_kal.c`.
+  - For kernels `< 6.14.0` (such as Linux 6.12.114-ophub LTS on FiberHome HG680-FJ): passes native `struct net_device *` (`aprRoleHandler`), permanently resolving kernel oops and station handshake crashes.
+  - For future kernels `>= 6.14.0` (such as Linux 6.18+): seamlessly passes `struct wireless_dev *` (`ieee80211_ptr`), maintaining forward compatibility with the modern upstream MLO cfg80211 API.
+
 ## [1.0.8] - 2026-10-31
 
 ### Changed
