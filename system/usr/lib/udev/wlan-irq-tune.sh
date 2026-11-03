@@ -1,5 +1,5 @@
 #!/bin/sh
-WIFI_IRQ=$(awk -F: '/ffe03000.mmc/ {gsub(/ /, "", $1); print $1}' /proc/interrupts 2>/dev/null)
+WIFI_IRQ=$(awk -F: '/ffe03000/ {gsub(/ /, "", $1); print $1}' /proc/interrupts 2>/dev/null)
 if [ -n "$WIFI_IRQ" ] && [ -d "/proc/irq/$WIFI_IRQ" ]; then
     echo 2,3 > /proc/irq/$WIFI_IRQ/smp_affinity_list
 fi

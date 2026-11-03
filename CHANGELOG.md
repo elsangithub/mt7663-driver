@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.11] - 2026-11-03
 
 ### Fixed
+- **Universal SDIO Controller Device Matching (`ffe03000*`)**:
+  - Updated `mt7663-shutdown.service` to dynamically discover and unbind `/sys/bus/platform/drivers/meson-gx-mmc/ffe03000*` using wildcard matching.
+  - Simplified IRQ affinity matching in `wlan-irq-tune.sh` to pattern `/ffe03000/`.
+  - Ensures seamless operation across kernel versions and DTB variants regardless of whether the platform bus device is named `ffe03000.mmc` or `ffe03000.sd`.
 - **UsrMerge Packaging Compliance (`build-deb.sh`)**:
   - Relocated firmware installation destination from `./lib/firmware/` to `./usr/lib/firmware/` in `build-deb.sh`.
   - Prevents `dpkg -x` extraction from converting `/lib` into a physical directory, which broke the mandatory `/lib -> usr/lib` symlink on modern Debian/Armbian systems and caused fatal `run-init: can't execute '/sbin/init': No such file or directory` kernel panics.
