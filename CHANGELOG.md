@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] - 2026-11-03
+
+### Fixed
+- **Multi-Kernel Compatibility for Station Update (`cfg80211_new_sta` & `cfg80211_del_sta`)**:
+  - Corrected kernel version preprocessor guard in `os/linux/gl_p2p_kal.c` to `#if (CFG80211_VERSION_CODE >= KERNEL_VERSION(6, 14, 0))`.
+  - Fixes fatal kernel oops and `main_thread` crash when stations associate on Linux 5.10 LTS and 6.12 LTS (`6.12.114-ophub`), while preserving upstream `struct wireless_dev *` signature compatibility for Linux 6.18+.
+- **`cfg80211_ops` Callback Signatures (`os/linux/gl_cfg80211.c` & `os/linux/include/gl_cfg80211.h`)**:
+  - Restored standard `struct net_device *ndev` parameter type across `add_key`, `get_key`, `del_key`, `set_default_mgmt_key`, `get_station`, `change_station`, `add_station`, and `del_station`.
+  - Eliminates bogus pointer dereferencing (`wdev->netdev`) and fixes `errno=11` failures during hostapd station flag updates.
+- **WPA2/WPA3 Data-Plane Queue Unlocking (`fgIsTxKeyReady`)**:
+  - Explicitly mark station transmission as allowed (`fgIsTxKeyReady = TRUE`) and update station queue record (`qmUpdateStaRec`) upon `NL80211_STA_FLAG_AUTHORIZED` and pairwise key installation in `mtk_cfg_change_station` and `mtk_p2p_cfg80211_add_key`.
+  - Resolves client loop where device connected to Wi-Fi but showed "terhubung tanpa internet" due to blocked data queues.
+- **Global Station Record Lookup Fallback (`nicEventAddPkeyDone` & `nicRxProcessEventPacket`)**:
+  - Added fallback search via `cnmGetAnyStaRecByAddress` to prevent BSS index mismatch on virtual interface `ap0` from dropping key completion events.
+
 ## [1.0.10] - 2026-11-03
 
 ### Release

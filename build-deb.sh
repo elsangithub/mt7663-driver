@@ -29,6 +29,7 @@ chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
 cp -a debian/* ${BUILD_DIR}/DEBIAN/
 sed -i "s/^Version:.*/Version: ${VERSION}/" ${BUILD_DIR}/DEBIAN/control
 sed -i "s/VERSION=".*"/VERSION="${VERSION}"/" ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
+chmod 755 ${BUILD_DIR}/DEBIAN
 chmod 755 ${BUILD_DIR}/DEBIAN/preinst ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 
 dpkg-deb --build ${BUILD_DIR} ${TARGET_DEB}

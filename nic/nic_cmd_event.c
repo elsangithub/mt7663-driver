@@ -5139,6 +5139,11 @@ void nicEventAddPkeyDone(IN struct ADAPTER *prAdapter,
 					 prKeyDone->aucStaAddr);
 
 	if (!prStaRec) {
+		prStaRec = cnmGetAnyStaRecByAddress(prAdapter,
+						    prKeyDone->aucStaAddr);
+	}
+
+	if (!prStaRec) {
 		ucKeyId =	prAdapter->rWifiVar.
 			rAisSpecificBssInfo.ucKeyAlgorithmId;
 		if ((ucKeyId == CIPHER_SUITE_WEP40)

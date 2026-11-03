@@ -889,6 +889,15 @@ int mtk_p2p_cfg80211_add_key(struct wiphy *wiphy,
 		ucLoopCnt++;
 		kalMsleep(1);
 	}
+
+	if (i4Rslt == 0 && pairwise && mac_addr) {
+		struct STA_RECORD *prStaRec = cnmGetAnyStaRecByAddress(
+			prGlueInfo->prAdapter, (uint8_t *)mac_addr);
+		if (prStaRec) {
+			prStaRec->fgIsTxKeyReady = TRUE;
+			qmUpdateStaRec(prGlueInfo->prAdapter, prStaRec);
+		}
+	}
 	return i4Rslt;
 }
 

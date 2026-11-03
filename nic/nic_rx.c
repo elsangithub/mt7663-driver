@@ -3322,6 +3322,10 @@ void nicRxProcessEventPacket(IN struct ADAPTER *prAdapter,
 			prStaRec = cnmGetStaRecByAddress(prAdapter,
 				prAddKeyDone->ucBSSIndex,
 				prAddKeyDone->aucStaAddr);
+			if (!prStaRec) {
+				prStaRec = cnmGetAnyStaRecByAddress(prAdapter,
+					prAddKeyDone->aucStaAddr);
+			}
 
 			if (prStaRec) {
 				DBGLOG(RSN, EVENT,
