@@ -22,8 +22,13 @@ find ${SRC_DIR} -type f \( -name "*.o" -o -name "*.o.d" -o -name "*.cmd" -o -nam
 
 # 2. Copy system integration files (firmware, udev, sysctl, blacklist)
 cp -a system/* ${BUILD_DIR}/
-chmod 644 ${BUILD_DIR}/lib/firmware/*
-chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh
+if [ -d "${BUILD_DIR}/lib/firmware" ]; then
+    mkdir -p ${BUILD_DIR}/usr/lib/firmware
+    cp -a ${BUILD_DIR}/lib/firmware/* ${BUILD_DIR}/usr/lib/firmware/
+    rm -rf ${BUILD_DIR}/lib
+fi
+chmod 644 ${BUILD_DIR}/usr/lib/firmware/* 2>/dev/null || true
+chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
 
 # 3. Copy Debian package control scripts
 cp -a debian/* ${BUILD_DIR}/DEBIAN/
