@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.11] - 2026-11-03
 
 ### Fixed
+- **UsrMerge Packaging Compliance (`build-deb.sh`)**:
+  - Relocated firmware installation destination from `./lib/firmware/` to `./usr/lib/firmware/` in `build-deb.sh`.
+  - Prevents `dpkg -x` extraction from converting `/lib` into a physical directory, which broke the mandatory `/lib -> usr/lib` symlink on modern Debian/Armbian systems and caused fatal `run-init: can't execute '/sbin/init': No such file or directory` kernel panics.
 - **Multi-Kernel Compatibility for Station Update (`cfg80211_new_sta` & `cfg80211_del_sta`)**:
   - Corrected kernel version preprocessor guard in `os/linux/gl_p2p_kal.c` to `#if (CFG80211_VERSION_CODE >= KERNEL_VERSION(6, 14, 0))`.
   - Fixes fatal kernel oops and `main_thread` crash when stations associate on Linux 5.10 LTS and 6.12 LTS (`6.12.114-ophub`), while preserving upstream `struct wireless_dev *` signature compatibility for Linux 6.18+.
