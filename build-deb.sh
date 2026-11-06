@@ -28,7 +28,8 @@ if [ -d "${BUILD_DIR}/lib/firmware" ]; then
     rm -rf ${BUILD_DIR}/lib
 fi
 chmod 644 ${BUILD_DIR}/usr/lib/firmware/* 2>/dev/null || true
-chmod 755 ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
+rm -f ${BUILD_DIR}/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
+chmod 755 ${BUILD_DIR}/usr/lib/udev/mt7663-irq-tune.sh 2>/dev/null || true
 
 # 3. Copy Debian package control scripts
 cp -a debian/* ${BUILD_DIR}/DEBIAN/

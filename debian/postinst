@@ -43,10 +43,16 @@ depmod -a
 modprobe wlan_mt7663_sdio 2>/dev/null || true
 
 # Apply sysctl and udev performance rules
-sysctl -p /etc/sysctl.d/99-wifi-throughput.conf 2>/dev/null || true
+sysctl -p /etc/sysctl.d/99-mt7663-throughput.conf 2>/dev/null || true
 udevadm control --reload-rules 2>/dev/null || true
 udevadm trigger 2>/dev/null || true
-/usr/lib/udev/wlan-irq-tune.sh 2>/dev/null || true
+/usr/lib/udev/mt7663-irq-tune.sh 2>/dev/null || true
+
+# Enable SDIO unbind service on shutdown/reboot to guarantee clean MT7663 hardware reset
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload 2>/dev/null || true
+    systemctl enable mt7663-shutdown.service 2>/dev/null || true
+fi
 ip link set wlan0 up 2>/dev/null || true
 systemctl restart wpa_supplicant 2>/dev/null || true
 systemctl restart NetworkManager 2>/dev/null || true

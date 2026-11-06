@@ -5,7 +5,7 @@ Before=shutdown.target reboot.target halt.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'for d in /sys/bus/platform/drivers/meson-gx-mmc/ffe03000*; do [ -e "$d" ] && echo "${d##*/}" > /sys/bus/platform/drivers/meson-gx-mmc/unbind 2>/dev/null || true; done'
+ExecStart=/bin/sh -c 'if lsmod | grep -q "^wlan_mt7663"; then for d in /sys/bus/platform/drivers/*mmc*/ffe03000* /sys/bus/platform/drivers/*sd*/ffe03000*; do [ -e "$d" ] && echo "${d##*/}" > "$(dirname "$d")/unbind" 2>/dev/null || true; done; fi'
 TimeoutStartSec=2
 
 [Install]

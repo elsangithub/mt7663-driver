@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wlan*", RUN+="/usr/lib/udev/mt7663-irq-tune.sh"
+

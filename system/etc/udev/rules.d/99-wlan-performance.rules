@@ -1,2 +1,0 @@
-ACTION=="add", SUBSYSTEM=="net", KERNEL=="wlan*", RUN+="/usr/lib/udev/wlan-irq-tune.sh"
-

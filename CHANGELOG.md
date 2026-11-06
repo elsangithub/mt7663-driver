@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-Kernel Compatibility for DFS Radar CAC Event (`cfg80211_cac_event`)**:
   - Corrected preprocessor guard in `os/linux/gl_p2p_kal.c` to `#if KERNEL_VERSION(6, 12, 0) <= CFG80211_VERSION_CODE`.
   - Resolves fatal compilation failure `error: too many arguments to function 'cfg80211_cac_event'` on Linux kernels 6.1 through 6.11 (such as Debian 12 standard 6.1, Linux 6.6 LTS, and Ubuntu 24.04 6.8), while preserving 5-argument MLO signature compatibility for Linux 6.12+.
+- **Multi-Driver Coexistence Architecture & System Namespacing (`mt7668` Parity)**:
+  - Isolated SDIO bus driver identifier to `.name = "wlan_mt7663_sdio"` in `os/linux/hif/sdio/sdio.c`, eliminating `-EBUSY` bus registration conflicts with other WLAN drivers.
+  - Added module active guard (`if lsmod | grep -q "^wlan_mt7663"`) and multi-bus wildcard discovery (`*mmc*` / `*sd*`) to `mt7663-shutdown.service` for deterministic quiesce without interfering with other hardware.
+  - Namespaced system tuning files to prevent package collisions: `/usr/lib/udev/mt7663-irq-tune.sh`, `/etc/sysctl.d/99-mt7663-throughput.conf`, and `/etc/udev/rules.d/99-mt7663-performance.rules`.
+  - Automated `mt7663-shutdown.service` enablement in `debian/postinst` and cleanup disable in `debian/prerm`.
 
 ## [1.0.11] - 2026-11-03
 

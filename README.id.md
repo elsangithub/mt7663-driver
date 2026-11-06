@@ -202,8 +202,8 @@ sudo apt purge -y mt7663-dkms
 3. Menghapus pendaftaran DKMS dan binari modul yang terkompilasi dari direktori `/var/lib/dkms/mt7663-dkms/`.
 4. Menghapus file *auto-load* modul di `/etc/modules-load.d/wlan_mt7663_sdio.conf`.
 5. Menonaktifkan dan menghapus *systemd shutdown unit* `/etc/systemd/system/mt7663-shutdown.service`.
-6. Menghapus script dan aturan IRQ udev `/etc/udev/rules.d/99-wlan-performance.rules`.
-7. Menghapus parameter kernel TCP buffer di `/etc/sysctl.d/99-wifi-throughput.conf`.
+6. Menghapus script dan aturan IRQ udev `/etc/udev/rules.d/99-mt7663-performance.rules`.
+7. Menghapus parameter kernel TCP buffer di `/etc/sysctl.d/99-mt7663-throughput.conf`.
 
 ---
 
@@ -270,8 +270,8 @@ sudo reboot
 | :--- | :--- | :--- |
 | **Amlogic SDIO Burst** | Host `max_req_size = 1536` karena `amlogic,dram-access-quirk`. Driver menampung 4096B sehingga memicu split CMD53 dan error `WASR_TX1_OVER_FLOW`. | Coalescing buffer dibatasi ke `host->max_req_size` (1536B) di `kalDevWriteData` (`sdio.c`) dan netdev MTU disesuaikan ke 1408. |
 | **CPU0 Bottleneck** | ARM GICv2 mengarahkan semua interupsi SPI ke CPU0; kode afinitas MediaTek lama memakai API proprietary Android (`mt_sched_setaffinity`). | Diganti dengan API standar Linux kernel `set_cpus_allowed_ptr()` di `gl_kal.c` untuk mengikat `rx_thread` dan `hif_thread` ke CPU 1-3. |
-| **Hardware IRQ Routing** | Race condition pada timing eksekusi systemd saat early boot. | Diintegrasikan ke script udev `/usr/lib/udev/wlan-irq-tune.sh` via `99-wlan-performance.rules` yang terpicu tepat saat MMC terdaftar. |
-| **PMTU Packet Drops** | MTU asimetris (1408 lokal vs 1500 remote) memicu packet blackhole jika PMTU probing mati (`tcp_mtu_probing = 0`). | Otomatisasi `net.ipv4.tcp_mtu_probing = 1` dan `tcp_moderate_rcvbuf = 1` di `/etc/sysctl.d/99-wifi-throughput.conf` (0.0% packet loss). |
+| **Hardware IRQ Routing** | Race condition pada timing eksekusi systemd saat early boot. | Diintegrasikan ke script udev `/usr/lib/udev/mt7663-irq-tune.sh` via `99-mt7663-performance.rules` yang terpicu tepat saat MMC terdaftar. |
+| **PMTU Packet Drops** | MTU asimetris (1408 lokal vs 1500 remote) memicu packet blackhole jika PMTU probing mati (`tcp_mtu_probing = 0`). | Otomatisasi `net.ipv4.tcp_mtu_probing = 1` dan `tcp_moderate_rcvbuf = 1` di `/etc/sysctl.d/99-mt7663-throughput.conf` (0.0% packet loss). |
 | **802.11ac Performance** | Konfigurasi default mematikan agregasi frame dan beamforming. | Mengaktifkan `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, dan meningkatkan throughput loop (`HifTxLoop 32`, `OsTxLoop 16`). |
 | **Warm Reboot Reliability** | Power rail STB selalu aktif membuat state machine chip MT7663 tidak ter-reset saat reboot, memicu timeout CMD5 (error -110). | Menambahkan `mt7663-shutdown.service` untuk unbind host MMC sebelum shutdown, memicu reset sequence hardware yang bersih. |
 

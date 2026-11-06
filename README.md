@@ -201,8 +201,8 @@ sudo apt purge -y mt7663-dkms
 3. Removes DKMS registration and binaries from `/var/lib/dkms/mt7663-dkms/`.
 4. Removes auto-load configuration from `/etc/modules-load.d/wlan_mt7663_sdio.conf`.
 5. Stops, disables, and deletes `/etc/systemd/system/mt7663-shutdown.service`.
-6. Deletes udev IRQ routing rule `/etc/udev/rules.d/99-wlan-performance.rules`.
-7. Deletes TCP buffer tuning `/etc/sysctl.d/99-wifi-throughput.conf`.
+6. Deletes udev IRQ routing rule `/etc/udev/rules.d/99-mt7663-performance.rules`.
+7. Deletes TCP buffer tuning `/etc/sysctl.d/99-mt7663-throughput.conf`.
 
 ---
 
@@ -269,8 +269,8 @@ sudo reboot
 | :--- | :--- | :--- |
 | **Amlogic SDIO Burst** | Host `max_req_size = 1536` due to `amlogic,dram-access-quirk`. Driver buffered 4096B, triggering multi-CMD53 splitting and `WASR_TX1_OVER_FLOW`. | Clamped coalescing buffer flush in `kalDevWriteData` (`sdio.c`) to `host->max_req_size` (1536B) and enforced netdev MTU to 1408. |
 | **CPU0 Bottleneck** | ARM GICv2 routes all SPI interrupts to CPU0 by default; MediaTek's internal affinity code relied on proprietary Android kernel APIs (`mt_sched_setaffinity`). | Replaced with standard Linux kernel `set_cpus_allowed_ptr()` in `gl_kal.c` to bind `rx_thread` and `hif_thread` to CPUs 1-3. |
-| **Hardware IRQ Routing** | Race conditions during early boot systemd timing. | Integrated dynamic trigger into `/usr/lib/udev/wlan-irq-tune.sh` via `99-wlan-performance.rules`. |
-| **PMTU Packet Drops** | Asymmetric MTU (1408 local vs 1500 remote) caused silent packet blackholes when path discovery was disabled (`tcp_mtu_probing = 0`). | Automated `net.ipv4.tcp_mtu_probing = 1` and `tcp_moderate_rcvbuf = 1` in `/etc/sysctl.d/99-wifi-throughput.conf` (0.0% packet loss). |
+| **Hardware IRQ Routing** | Race conditions during early boot systemd timing. | Integrated dynamic trigger into `/usr/lib/udev/mt7663-irq-tune.sh` via `99-mt7663-performance.rules`. |
+| **PMTU Packet Drops** | Asymmetric MTU (1408 local vs 1500 remote) caused silent packet blackholes when path discovery was disabled (`tcp_mtu_probing = 0`). | Automated `net.ipv4.tcp_mtu_probing = 1` and `tcp_moderate_rcvbuf = 1` in `/etc/sysctl.d/99-mt7663-throughput.conf` (0.0% packet loss). |
 | **802.11ac Performance** | Stock configuration defaulted aggregation and beamforming to disabled. | Enabled `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, and doubled processing loops (`HifTxLoop 32`, `OsTxLoop 16`). |
 | **Warm Reboot Reliability** | Always-on power rails on TV boxes leave MT7663 state machine active after SoC reset, leading to CMD5 probe timeout (error -110). | Integrated `mt7663-shutdown.service` to unbind host MMC controller prior to reset, triggering clean hardware reset sequence. |
 
