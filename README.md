@@ -86,11 +86,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Step 3: Download & Install the Debian Package (.deb)
 ```bash
-# Download the latest verified release package (v1.0.11)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.11/mt7663-dkms_1.0.11_all.deb
+# Download the latest verified release package (v1.0.12)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/mt7663-dkms_1.0.12_all.deb
 
 # Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.11_all.deb
+sudo dpkg -i mt7663-dkms_1.0.12_all.deb
 ```
 
 ### Step 4: Reboot
@@ -287,7 +287,7 @@ If you update or switch kernel versions on your TV box:
 2. Run any of the following commands to rebuild the driver for your new kernel (~15-20 seconds):
    - **Option 1: Reinstall the Package (Easiest)**
      ```bash
-     sudo dpkg -i mt7663-dkms_1.0.11_all.deb
+     sudo dpkg -i mt7663-dkms_1.0.12_all.deb
      ```
    - **Option 2: Trigger via DKMS**
      ```bash

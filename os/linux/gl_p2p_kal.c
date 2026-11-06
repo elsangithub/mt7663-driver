@@ -1663,7 +1663,7 @@ void kalP2PCacFinishedUpdate(IN struct GLUE_INFO *prGlueInfo,
 		return;
 
 	DBGLOG(INIT, INFO, "kalP2PCacFinishedUpdate: Update to OS\n");
-#if KERNEL_VERSION(6, 1, 0) <= CFG80211_VERSION_CODE
+#if KERNEL_VERSION(6, 12, 0) <= CFG80211_VERSION_CODE
 	cfg80211_cac_event(prGlueInfo->prP2PInfo[ucRoleIndex]->prDevHandler,
 			prGlueInfo->prP2PInfo[ucRoleIndex]->chandef,
 			NL80211_RADAR_CAC_FINISHED, GFP_KERNEL, 0);
