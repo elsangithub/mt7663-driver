@@ -86,11 +86,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Langkah 3: Unduh & Pasang Paket Debian (.deb)
 ```bash
-# Unduh paket rilis resmi terbaru (v1.0.8)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.8/mt7663-dkms_1.0.8_all.deb
+# Unduh paket rilis resmi terbaru (v1.0.11)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.11/mt7663-dkms_1.0.11_all.deb
 
 # Pasang paket (DKMS akan otomatis mengompilasi modul untuk kernel aktif dalam ~15-20 detik)
-sudo dpkg -i mt7663-dkms_1.0.8_all.deb
+sudo dpkg -i mt7663-dkms_1.0.11_all.deb
 ```
 
 ### Langkah 4: Muat Driver atau Reboot
@@ -288,7 +288,7 @@ Jika Anda memperbarui atau berganti versi kernel di TV box Anda:
 2. Jalankan salah satu perintah berikut untuk membangun ulang driver untuk kernel baru Anda (~15-20 detik):
    - **Opsi 1: Pasang Ulang Paket .deb (Paling Mudah)**
      ```bash
-     sudo dpkg -i mt7663-dkms_1.0.7_all.deb
+     sudo dpkg -i mt7663-dkms_1.0.11_all.deb
      ```
    - **Opsi 2: Pemicu Otomatis via DKMS**
      ```bash
