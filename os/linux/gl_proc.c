@@ -83,7 +83,7 @@
  *******************************************************************************
  */
 #define PROC_MCR_ACCESS                         "mcr"
-#define PROC_ROOT_NAME							"wlan"
+#define PROC_ROOT_NAME							"wlan_mt7663"
 
 #if CFG_SUPPORT_DEBUG_FS
 #define PROC_ROAM_PARAM							"roam_param"
@@ -2385,7 +2385,7 @@ static ssize_t procAutoPerfCfgRead(struct file *filp, char __user *buf,
 
 	str = "Auto Performance Configure Usage:\n"
 	    "\n"
-	    "echo ForceEnable:0 or 1 > /proc/net/wlan/autoPerfCfg\n"
+	    "echo ForceEnable:0 or 1 > /proc/net/wlan_mt7663/autoPerfCfg\n"
 	    "     1: always enable performance monitor\n"
 	    "     0: restore performance monitor's default strategy\n";
 	u4StrLen = kalStrLen(str);

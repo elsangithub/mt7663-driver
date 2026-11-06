@@ -6490,9 +6490,9 @@ int kalMetInitProcfs(IN struct GLUE_INFO *prGlueInfo)
 		return -ENOENT;
 	}
 	/*
-	 * Directory: Root (/proc/net/wlan0)
+	 * Directory: Root (/proc/net/wlan_mt7663_met)
 	 */
-	pMetProcDir = proc_mkdir("wlan0", init_net.proc_net);
+	pMetProcDir = proc_mkdir("wlan_mt7663_met", init_net.proc_net);
 	if (pMetProcDir == NULL)
 		return -ENOENT;
 	/*
@@ -6521,8 +6521,8 @@ int kalMetRemoveProcfs(void)
 	}
 	remove_proc_entry(PROC_MET_PROF_CTRL, pMetProcDir);
 	remove_proc_entry(PROC_MET_PROF_PORT, pMetProcDir);
-	/* remove root directory (proc/net/wlan0) */
-	remove_proc_entry("wlan0", init_net.proc_net);
+	/* remove root directory (proc/net/wlan_mt7663_met) */
+	remove_proc_entry("wlan_mt7663_met", init_net.proc_net);
 	/* clear MetGlobalData */
 	pMetGlobalData = NULL;
 
