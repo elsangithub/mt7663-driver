@@ -175,7 +175,7 @@ Agar repositori driver kernel ini tetap ramping, ringan, dan murni berfokus pada
 
 ```bash
 # Untuk memasang paket Web UI & Pengelola Hotspot di atas driver ini:
-sudo apt install ./mt7663-router-webui_1.0.1_all.deb
+sudo apt install ./mt7663-router-webui_*_all.deb
 ```
 
 ---
@@ -237,7 +237,7 @@ Unduh DTB Universal langsung dari rilis resmi dan timpa DTB lama:
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
 # 2. Unduh dan pasang DTB Universal langsung dari rilis resmi
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
 
 # 3. Reboot STB
 sudo reboot
@@ -248,7 +248,7 @@ sudo reboot
 Unduh file DTB fixed dengan nama aslinya, lalu arahkan konfigurasi boot ke file tersebut:
 ```bash
 # 1. Unduh file DTB fixed ke direktori boot
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
 
 # 2. Buka file konfigurasi boot
 sudo nano /boot/uEnv.txt
@@ -274,6 +274,8 @@ sudo reboot
 | **PMTU Packet Drops** | MTU asimetris (1408 lokal vs 1500 remote) memicu packet blackhole jika PMTU probing mati (`tcp_mtu_probing = 0`). | Otomatisasi `net.ipv4.tcp_mtu_probing = 1` dan `tcp_moderate_rcvbuf = 1` di `/etc/sysctl.d/99-mt7663-throughput.conf` (0.0% packet loss). |
 | **802.11ac Performance** | Konfigurasi default mematikan agregasi frame dan beamforming. | Mengaktifkan `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, dan meningkatkan throughput loop (`HifTxLoop 32`, `OsTxLoop 16`). |
 | **Warm Reboot Reliability** | Power rail STB selalu aktif membuat state machine chip MT7663 tidak ter-reset saat reboot, memicu timeout CMD5 (error -110). | Menambahkan `mt7663-shutdown.service` untuk unbind host MMC sebelum shutdown, memicu reset sequence hardware yang bersih. |
+| **DFS Radar CAC Guard** | Gagal kompilasi `too many arguments to function 'cfg80211_cac_event'` pada kernel Linux 6.1..6.11. | Menerapkan preprocessor guard `#if KERNEL_VERSION(6, 12, 0) <= CFG80211_VERSION_CODE` untuk kompatibilitas universal kernel 6.1..6.18+. |
+| **Koeksistensi Multi-Driver** | Tabrakan bus `name = "wlan"` dan `/proc/net/wlan` saat driver MT7668 dipasang di image STB yang sama. | Mengisolasi identifier bus SDIO ke `wlan_mt7663_sdio` dan direktori procfs ke `/proc/net/wlan_mt7663` (bebas bentrok 100%). |
 
 ---
 

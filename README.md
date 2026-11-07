@@ -174,7 +174,7 @@ To keep this kernel driver lean, lightweight, and strictly focused on core DKMS 
 
 ```bash
 # To install the Web UI & Hotspot Manager on top of this driver:
-sudo apt install ./mt7663-router-webui_1.0.1_all.deb
+sudo apt install ./mt7663-router-webui_*_all.deb
 ```
 
 ---
@@ -236,7 +236,7 @@ Directly download the Universal DTB and overwrite your stock DTB:
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
 # 2. Download and apply Universal DTB directly from official release
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
 
 # 3. Reboot the device
 sudo reboot
@@ -247,7 +247,7 @@ sudo reboot
 Download the fixed DTB with its own name and update your boot configuration:
 ```bash
 # 1. Download the fixed DTB to your boot directory
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.7/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
 
 # 2. Edit your boot environment file
 sudo nano /boot/uEnv.txt
@@ -273,6 +273,8 @@ sudo reboot
 | **PMTU Packet Drops** | Asymmetric MTU (1408 local vs 1500 remote) caused silent packet blackholes when path discovery was disabled (`tcp_mtu_probing = 0`). | Automated `net.ipv4.tcp_mtu_probing = 1` and `tcp_moderate_rcvbuf = 1` in `/etc/sysctl.d/99-mt7663-throughput.conf` (0.0% packet loss). |
 | **802.11ac Performance** | Stock configuration defaulted aggregation and beamforming to disabled. | Enabled `AmsduInAmpduTx 1`, `VhtAmsduInAmpduTx 1`, `StaVHTBfee 1` (Beamforming), `StbcRx 1`, and doubled processing loops (`HifTxLoop 32`, `OsTxLoop 16`). |
 | **Warm Reboot Reliability** | Always-on power rails on TV boxes leave MT7663 state machine active after SoC reset, leading to CMD5 probe timeout (error -110). | Integrated `mt7663-shutdown.service` to unbind host MMC controller prior to reset, triggering clean hardware reset sequence. |
+| **DFS Radar CAC Guard** | Fatal compile error `too many arguments to function 'cfg80211_cac_event'` on Linux kernels 6.1..6.11. | Implemented preprocessor guard `#if KERNEL_VERSION(6, 12, 0) <= CFG80211_VERSION_CODE` for universal 6.1..6.18+ support. |
+| **Multi-Driver Coexistence** | Collision on bus `name = "wlan"` and `/proc/net/wlan` when MT7668 driver is present on same STB image. | Isolated SDIO bus identifier to `wlan_mt7663_sdio` and procfs directory to `/proc/net/wlan_mt7663` (0 conflict). |
 
 ---
 
