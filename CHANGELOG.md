@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added module active guard (`if lsmod | grep -q "^wlan_mt7663"`) and multi-bus wildcard discovery (`*mmc*` / `*sd*`) to `mt7663-shutdown.service` for deterministic quiesce without interfering with other hardware.
   - Namespaced system tuning files to prevent package collisions: `/usr/lib/udev/mt7663-irq-tune.sh`, `/etc/sysctl.d/99-mt7663-throughput.conf`, and `/etc/udev/rules.d/99-mt7663-performance.rules`.
   - Automated `mt7663-shutdown.service` enablement in `debian/postinst` and cleanup disable in `debian/prerm`.
+- **Procfs Root & MET Profiling Namespacing (`/proc/net/wlan_mt7663` & `/proc/net/wlan_mt7663_met`)**:
+  - Isolated procfs root directory from generic `"wlan"` to `"wlan_mt7663"` in `os/linux/gl_proc.c` and MET procfs directory to `"wlan_mt7663_met"` in `os/linux/gl_kal.c`.
+  - Resolves kernel warning call trace `proc_dir_entry 'net/wlan' already registered` when both `wlan_mt7663` and `wlan_mt7668` kernel modules are loaded simultaneously at boot.
 
 ## [1.0.11] - 2026-11-03
 
