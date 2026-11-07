@@ -7,7 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/elsangithub/mt7663-driver?color=blue&label=release)](https://github.com/elsangithub/mt7663-driver/releases)
 [![Build & Release](https://github.com/elsangithub/mt7663-driver/actions/workflows/release.yml/badge.svg)](https://github.com/elsangithub/mt7663-driver/actions/workflows/release.yml)
 [![DKMS Ready](https://img.shields.io/badge/DKMS-Automated_Build-brightgreen.svg)](https://github.com/elsangithub/mt7663-driver)
-[![License: GPL-2.0](https://img.shields.io/badge/License-GPL_2.0-blue.svg)](https://opensource.org/licenses/GPL-2.0)
+[![License: Dual BSD / GPL-2.0](https://img.shields.io/badge/License-Dual_BSD_%2F_GPL--2.0-blue.svg)](LICENSE)
 
 Patched, high-performance out-of-tree Linux kernel driver for the **MediaTek MT7663 / MT7661** (AMPAK MT7661RSN, SDIO ID `037A:7663` / `037A:7603`) dual-band 802.11a/b/g/n/ac combo module.
 
@@ -307,7 +307,7 @@ If you update or switch kernel versions on your TV box:
 ---
 
 ## 📄 License
-GPL-2.0 / MediaTek Proprietary Base.
+This project is licensed under the **Dual BSD / GPL-2.0** license. See the [LICENSE](LICENSE) file for the full license text.
 
 ---
 

@@ -16,7 +16,7 @@ mkdir -p ${SRC_DIR}
 mkdir -p ${BUILD_DIR}/DEBIAN
 
 # 1. Copy pure driver source code directly
-cp -a chips common include mgmt nic os prealloc Makefile Kconfig dkms.conf CHANGELOG.md README.md ${SRC_DIR}/
+cp -a chips common include mgmt nic os prealloc Makefile Kconfig dkms.conf CHANGELOG.md README.md LICENSE ${SRC_DIR}/
 sed -i "s/PACKAGE_VERSION=".*"/PACKAGE_VERSION="${VERSION}"/" ${SRC_DIR}/dkms.conf
 find ${SRC_DIR} -type f \( -name "*.o" -o -name "*.o.d" -o -name "*.cmd" -o -name "*.ko" -o -name "*.mod*" \) -delete
 
@@ -30,8 +30,12 @@ fi
 chmod 644 ${BUILD_DIR}/usr/lib/firmware/* 2>/dev/null || true
 chmod 755 ${BUILD_DIR}/usr/lib/udev/mt7663-irq-tune.sh 2>/dev/null || true
 
-# 3. Copy Debian package control scripts
+# 3. Copy Debian package control scripts and documentation
+mkdir -p ${BUILD_DIR}/usr/share/doc/${PACKAGE}
+cp -a debian/copyright ${BUILD_DIR}/usr/share/doc/${PACKAGE}/copyright
+chmod 644 ${BUILD_DIR}/usr/share/doc/${PACKAGE}/copyright
 cp -a debian/* ${BUILD_DIR}/DEBIAN/
+rm -f ${BUILD_DIR}/DEBIAN/copyright
 sed -i "s/^Version:.*/Version: ${VERSION}/" ${BUILD_DIR}/DEBIAN/control
 sed -i "s/VERSION=".*"/VERSION="${VERSION}"/" ${BUILD_DIR}/DEBIAN/postinst ${BUILD_DIR}/DEBIAN/prerm
 chmod 755 ${BUILD_DIR}/DEBIAN
