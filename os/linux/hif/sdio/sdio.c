@@ -1872,9 +1872,6 @@ u_int8_t kalDevWriteCmd(IN struct GLUE_INFO *prGlueInfo, IN struct CMD_INFO *prC
 
 	prGlueInfo->rHifInfo.rStatCounter.u4CmdPktWriteCnt++;
 
-	/* Allow on-chip MCU to drain MCR_WTDR1 command FIFO before next command */
-	usleep_range(2500, 4000);
-
 	return TRUE;
 }
 

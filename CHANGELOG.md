@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] - 2026-11-24
+
+### Fixed
+- **Direct RX Packet Delivery & Elimination of `rx_thread` Starvation (`hal.h` & `nic_rx.c`)**:
+  - Enabled `HAL_IS_RX_DIRECT(_prAdapter) TRUE` for SDIO interface architecture.
+  - Packets read by `hif_thread` from the SDIO bus are now immediately delivered to the OS network stack via `kalRxIndicateOnePkt` -> `netif_rx()` without intermediate queueing in `rRxQueue`.
+  - Eliminates CPU starvation of `rx_thread` caused by high-priority threaded MMC interrupts (`irq/23-ffe03000.mmc` running at `SCHED_FIFO 50`) on modern Linux kernels (Linux 6.12+), preventing packet backlog stalls and WebSocket stream freezes under heavy network load.
+- **Host Controller SDIO Capability & DMA Alignment (`hal_api.c`)**:
+  - Removed artificial `override u4BufSize -> 4096` in `halGetValidCoalescingBufSize`.
+  - Ensures buffer coalescing strictly respects host hardware capabilities (`max_req_size` and `u4RuntimeMaxBuf`), eliminating multi-request split DMA stalls and bus lockups on Amlogic SDIO controllers (`meson-gx-mmc` max_req_size=1536).
+- **Zero-Latency Non-Blocking Command Transmission (`sdio.c`)**:
+  - Removed artificial `usleep_range(2500, 4000)` delay in `kalDevWriteCmd`.
+  - Restores immediate asynchronous return (0 ms latency) for Wi-Fi management and control frames, eliminating latency spikes and preventing real-time stream disconnects.
+
 ## [1.0.12] - 2026-11-07
 
 ### Fixed

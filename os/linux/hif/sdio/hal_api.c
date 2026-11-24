@@ -1953,11 +1953,6 @@ uint32_t halGetValidCoalescingBufSize(IN struct ADAPTER *prAdapter)
 	if (u4BufSize > u4RuntimeMaxBuf)
 		u4BufSize = u4RuntimeMaxBuf;
 
-	if (u4BufSize < 4096) {
-		printk(KERN_INFO "[wlan-bufsize] override u4BufSize %u -> 4096 for EEPROM and MTU frame\n", u4BufSize);
-		u4BufSize = 4096;
-	}
-
 	printk(KERN_INFO "[wlan-bufsize] halGetValidCoalescingBufSize = %u (TX_COAL=%u RX_COAL=%u)\n",
 	       u4BufSize, HIF_TX_COALESCING_BUFFER_SIZE, HIF_RX_COALESCING_BUFFER_SIZE);
 

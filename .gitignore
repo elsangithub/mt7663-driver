@@ -9,3 +9,5 @@ Module.symvers
 .tmp_versions/
 *.deb
 EXPERIMENTAL_LOG.md
+PR.md
+mtk-network-tune.sh

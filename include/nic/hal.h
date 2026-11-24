@@ -549,7 +549,7 @@ do { \
 
 #define HAL_IS_TX_DIRECT(_prAdapter) FALSE
 
-#define HAL_IS_RX_DIRECT(_prAdapter) FALSE
+#define HAL_IS_RX_DIRECT(_prAdapter) TRUE
 
 #define HAL_HAS_AGG_THREAD(_prAdapter) FALSE
 
@@ -937,7 +937,7 @@ do { \
 
 #define HAL_IS_TX_DIRECT(_prAdapter) FALSE
 
-#define HAL_IS_RX_DIRECT(_prAdapter) FALSE
+#define HAL_IS_RX_DIRECT(_prAdapter) TRUE
 
 #ifdef _SDIO_RING
 

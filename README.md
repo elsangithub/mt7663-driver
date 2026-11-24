@@ -86,11 +86,11 @@ ls -d /usr/src/linux-headers-$(uname -r)
 
 ### Step 3: Download & Install the Debian Package (.deb)
 ```bash
-# Download the latest verified release package (v1.0.12)
-wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/mt7663-dkms_1.0.12_all.deb
+# Download the latest verified release package (v1.0.13)
+wget https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.13/mt7663-dkms_1.0.13_all.deb
 
 # Install package (DKMS will compile the module for your active kernel in ~15-20s)
-sudo dpkg -i mt7663-dkms_1.0.12_all.deb
+sudo dpkg -i mt7663-dkms_1.0.13_all.deb
 ```
 
 ### Step 4: Reboot
@@ -236,7 +236,7 @@ Directly download the Universal DTB and overwrite your stock DTB:
 sudo cp /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb.bak
 
 # 2. Download and apply Universal DTB directly from official release
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.13/meson-g12a-hg680-fj-uni.dtb
 
 # 3. Reboot the device
 sudo reboot
@@ -247,7 +247,7 @@ sudo reboot
 Download the fixed DTB with its own name and update your boot configuration:
 ```bash
 # 1. Download the fixed DTB to your boot directory
-sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.12/meson-g12a-hg680-fj-uni.dtb
+sudo wget -O /boot/dtb/amlogic/meson-g12a-hg680-fj-uni.dtb https://github.com/elsangithub/mt7663-driver/releases/download/v1.0.13/meson-g12a-hg680-fj-uni.dtb
 
 # 2. Edit your boot environment file
 sudo nano /boot/uEnv.txt
@@ -289,7 +289,7 @@ If you update or switch kernel versions on your TV box:
 2. Run any of the following commands to rebuild the driver for your new kernel (~15-20 seconds):
    - **Option 1: Reinstall the Package (Easiest)**
      ```bash
-     sudo dpkg -i mt7663-dkms_1.0.12_all.deb
+     sudo dpkg -i mt7663-dkms_1.0.13_all.deb
      ```
    - **Option 2: Trigger via DKMS**
      ```bash
